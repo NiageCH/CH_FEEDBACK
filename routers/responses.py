@@ -115,7 +115,6 @@ def get_analytics_endpoint(
     sd = date.fromisoformat(start_date) if start_date else date.today().replace(day=1)
     ed = date.fromisoformat(end_date) if end_date else date.today()
 
-    try:
         try:
         return get_analytics(db, org_id, survey_id, branch_ids, sd, ed, granularity)
     except Exception as e:
