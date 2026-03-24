@@ -7,6 +7,7 @@ CRUD endpoints for surveys and questions.
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text as sqla_text
 from sqlalchemy import func
 
 from models import FeedbackSurvey, FeedbackQuestion
@@ -322,8 +323,8 @@ def get_survey_branches(org_id: int, survey_id: int, db: Session = Depends(get_d
     from sqlalchemy import text as sqla_text
     require_org_access(current_user, org_id)
     _survey_or_404(db, survey_id, org_id)
-    assigned = db.execute(sqla_text("SELECT b.id, b.name FROM feedback_survey_branches sb JOIN branches b ON b.id=sb.branch_id WHERE sb.survey_id=:sid ORDER BY b.name"), {"sid": survey_id}).fetchall()
-    available = db.execute(sqla_text("SELECT id, name FROM branches WHERE organization_id=:oid ORDER BY name"), {"oid": org_id}).fetchall()
+    assigned = db.execute(sqla_sqla_text("SELECT b.id, b.name FROM feedback_survey_branches sb JOIN branches b ON b.id=sb.branch_id WHERE sb.survey_id=:sid ORDER BY b.name"), {"sid": survey_id}).fetchall()
+    available = db.execute(sqla_sqla_text("SELECT id, name FROM branches WHERE organization_id=:oid ORDER BY name"), {"oid": org_id}).fetchall()
     aids = [r[0] for r in assigned]
     return {"survey_id": survey_id, "assigned": [{"id": r[0], "name": r[1]} for r in assigned], "available": [{"id": r[0], "name": r[1]} for r in available], "assigned_ids": aids}
 
@@ -334,34 +335,8 @@ def update_survey_branches(org_id: int, survey_id: int, body: dict, db: Session 
     require_org_access(current_user, org_id)
     _survey_or_404(db, survey_id, org_id)
     branch_ids = body.get("branch_ids", [])
-    db.execute(sqla_text("DELETE FROM feedback_survey_branches WHERE survey_id=:sid"), {"sid": survey_id})
+    db.execute(sqla_sqla_text("DELETE FROM feedback_survey_branches WHERE survey_id=:sid"), {"sid": survey_id})
     for bid in branch_ids:
-        db.execute(sqla_text("INSERT INTO feedback_survey_branches (survey_id, branch_id) VALUES (:sid,:bid) ON CONFLICT DO NOTHING"), {"sid": survey_id, "bid": bid})
+        db.execute(sqla_sqla_text("INSERT INTO feedback_survey_branches (survey_id, branch_id) VALUES (:sid,:bid) ON CONFLICT DO NOTHING"), {"sid": survey_id, "bid": bid})
     db.commit()
     return {"survey_id": survey_id, "branch_ids": branch_ids}
-
-@router.put("/surveys/{survey_id}/branches")
-def update_survey_branches(
-    org_id: int,
-    survey_id: int,
-    body: dict,
-    db: Session = Depends(get_db),
-    current_user: CurrentUser = Depends(get_current_user),
-):
-    """Assign branches to a survey. Replaces existing assignment."""
-    require_role(current_user, ["ADMIN", "MANAGER", "SUPERADMIN"])
-    require_org_access(current_user, org_id)
-    _survey_or_404(db, survey_id, org_id)
-
-    branch_ids = body.get("branch_ids", [])
-    db.execute(
-        text("DELETE FROM feedback_survey_branches WHERE survey_id=:sid"),
-        {"sid": survey_id}
-    )
-    for bid in branch_ids:
-        db.execute(
-            text("INSERT INTO feedback_survey_branches (survey_id, branch_id) VALUES (:sid,:bid) ON CONFLICT DO NOTHING"),
-            {"sid": survey_id, "bid": bid}
-        )
-    db.commit()
-    return {"survey_id": survey_id, "branch_ids": branch_ids, "message": "Branches updated"}
