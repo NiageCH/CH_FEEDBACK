@@ -227,24 +227,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 
 <!-- NEW SURVEY FORM -->
 <div class="form-overlay" id="form-overlay">
-  <div class="form-box">
+  <div class="form-box" style="width:560px;max-height:85vh;overflow-y:auto">
     <div class="form-title">
       Nueva encuesta
       <button class="close-btn" onclick="closeNewSurvey()">×</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field"><label>Nombre</label><input id="ns-name" placeholder="Ej: Valoracion verano 2026"></div>
-      <div class="field"><label>Mensaje de gracias</label><input id="ns-thanks" value="Gracias por tu opinion"></div>
+
+    <div class="field">
+      <label>Nombre de la encuesta</label>
+      <input id="ns-name" type="text" placeholder="Ej: Valoracion verano 2026">
     </div>
+
+    <div class="field">
+      <label>Mensaje de gracias</label>
+      <input id="ns-thanks" value="Gracias por tu opinion">
+    </div>
+
     <div class="field">
       <label>Tiendas asignadas</label>
-      <div class="branches-grid" id="ns-branches"></div>
+      <div id="ns-branches" class="branches-grid"></div>
     </div>
+
+    <div class="field">
+      <label>Preguntas <span style="color:var(--tx3);font-size:10px">(puedes añadir hasta 5)</span></label>
+      <div id="ns-questions"></div>
+      <button class="btn btn-g" style="margin-top:8px;font-size:11px" onclick="addQuestion()">+ Añadir pregunta</button>
+    </div>
+
     <div class="form-actions">
       <button class="btn btn-p" onclick="createSurvey()">Crear encuesta</button>
       <button class="btn btn-g" onclick="closeNewSurvey()">Cancelar</button>
     </div>
   </div>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -277,11 +292,17 @@ async function init() {
     }
   } catch(e) {}
 
-  // Load branches for sidebar
+  // Load branches from API
   try {
     const r = await fetch(API + '/organizations/' + OID + '/branches', {headers: H()});
     const d = await r.json();
-    branches = d.branches || [];
+    branches = Array.isArray(d) ? d : (d.branches || []);
+    if(!branches.length) {
+      // fallback: get from surveys endpoint
+      const r2 = await fetch(API + '/organizations/' + OID + '/feedback/surveys/1/branches', {headers: H()});
+      const d2 = await r2.json();
+      branches = d2.available || [];
+    }
   } catch(e) {}
 
   loadOverview();
@@ -447,42 +468,105 @@ async function loadResponses() {
   } catch(e) {}
 }
 
+
+let questionCount = 0;
+const Q_TYPES = {stars:'★ Estrellas', nps:'NPS (0-10)', yesno:'Si / No', text:'Texto libre'};
+
 function openNewSurvey() {
+  questionCount = 0;
+  document.getElementById('ns-name').value = '';
+  document.getElementById('ns-thanks').value = 'Gracias por tu opinion';
+  document.getElementById('ns-questions').innerHTML = '';
+  addQuestion(); // start with one question
+
   const grid = document.getElementById('ns-branches');
-  grid.innerHTML = branches.map(b => `
-    <label class="branch-cb-label">
-      <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)">
-      ${b.name}
-    </label>`).join('');
+  if(branches.length) {
+    grid.innerHTML = branches.map(b => `
+      <label class="branch-cb-label">
+        <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)">
+        ${b.name}
+      </label>`).join('');
+  } else {
+    grid.innerHTML = '<div style="color:var(--tx3);font-size:12px">Cargando tiendas...</div>';
+    fetch(API+'/organizations/'+OID+'/feedback/surveys/1/branches',{headers:H()})
+    .then(r=>r.json()).then(d=>{
+      branches = d.available || [];
+      grid.innerHTML = branches.map(b => `
+        <label class="branch-cb-label">
+          <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)">
+          ${b.name}
+        </label>`).join('');
+    });
+  }
   document.getElementById('form-overlay').classList.add('open');
+}
+
+function addQuestion() {
+  const container = document.getElementById('ns-questions');
+  if(container.children.length >= 5) { showToast('Maximo 5 preguntas'); return; }
+  const idx = ++questionCount;
+  const div = document.createElement('div');
+  div.id = 'q-row-'+idx;
+  div.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+  div.innerHTML = `
+    <div style="width:20px;height:20px;border-radius:4px;background:var(--p2);color:var(--p);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${idx}</div>
+    <input type="text" id="qt-${idx}" placeholder="Texto de la pregunta" style="flex:1;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none">
+    <select id="qtype-${idx}" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:11px;font-family:inherit;outline:none">
+      ${Object.entries(Q_TYPES).map(([v,l])=>`<option value="${v}"${v==='stars'?' selected':''}>${l}</option>`).join('')}
+    </select>
+    <button onclick="document.getElementById('q-row-${idx}').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1">×</button>
+  `;
+  container.appendChild(div);
 }
 
 function closeNewSurvey() {
   document.getElementById('form-overlay').classList.remove('open');
-  document.getElementById('ns-name').value = '';
 }
 
 async function createSurvey() {
   const name = document.getElementById('ns-name').value.trim();
   const thanks = document.getElementById('ns-thanks').value.trim() || 'Gracias';
   const brIds = [...document.querySelectorAll('[name="nsb"]:checked')].map(i => +i.value);
-  if (!name) { showToast('Escribe el nombre'); return; }
+
+  if(!name) { showToast('Escribe el nombre de la encuesta'); return; }
+  if(!brIds.length) { showToast('Selecciona al menos una tienda'); return; }
+
+  // Collect questions
+  const questions = [];
+  document.querySelectorAll('[id^="qt-"]').forEach((inp,i) => {
+    const idx = inp.id.split('-')[1];
+    const text = inp.value.trim();
+    const type = document.getElementById('qtype-'+idx)?.value || 'stars';
+    if(text) questions.push({text, type, sort_order: i+1});
+  });
+  if(!questions.length) { showToast('Añade al menos una pregunta'); return; }
+
   try {
-    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {
-      method: 'POST', headers: H(), body: JSON.stringify({name, thank_you_msg: thanks})
+    // 1. Create survey
+    const r = await fetch(API+'/organizations/'+OID+'/feedback/surveys', {
+      method:'POST', headers:H(), body:JSON.stringify({name, thank_you_msg:thanks})
     });
-    const d = await r.json();
-    if (!r.ok) { showToast(d.detail || 'Error'); return; }
-    if (brIds.length && d.id) {
-      await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + d.id + '/branches', {
-        method: 'PUT', headers: H(), body: JSON.stringify({branch_ids: brIds})
+    const sv = await r.json();
+    if(!r.ok) { showToast(sv.detail||'Error creando encuesta'); return; }
+
+    // 2. Create questions
+    for(const q of questions) {
+      await fetch(API+'/organizations/'+OID+'/feedback/surveys/'+sv.id+'/questions', {
+        method:'POST', headers:H(), body:JSON.stringify(q)
       });
     }
+
+    // 3. Assign branches
+    await fetch(API+'/organizations/'+OID+'/feedback/surveys/'+sv.id+'/branches', {
+      method:'PUT', headers:H(), body:JSON.stringify({branch_ids:brIds})
+    });
+
     closeNewSurvey();
-    showToast('Encuesta creada con ' + brIds.length + ' tienda(s)');
+    showToast('Encuesta creada con '+questions.length+' preguntas y '+brIds.length+' tienda(s)');
     loadSurveys();
-  } catch(e) { showToast('Error creando encuesta'); }
+  } catch(e) { showToast('Error: '+e.message); }
 }
+
 
 function showToast(msg) {
   const t = document.getElementById('toast');
