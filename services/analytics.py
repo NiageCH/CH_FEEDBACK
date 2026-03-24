@@ -1,4 +1,5 @@
 """
+from sqlalchemy import text as sqla_text
 feedback/services/analytics.py
 Satisfaction score calculation logic.
 
@@ -15,6 +16,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import text as sqla_text  # noqa
 from sqlalchemy import func, and_, extract
 
 from models import (
