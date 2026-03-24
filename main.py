@@ -6,11 +6,11 @@ feedback/main.py
 FastAPI app entry point for the Feedback module.
 
 HOW TO INTEGRATE WITH YOUR EXISTING CUSTOMER HUB APP:
-  Option A — Mount as sub-app (recommended for separation):
+  Option A â Mount as sub-app (recommended for separation):
     from feedback.main import feedback_app
     main_app.mount("/feedback-module", feedback_app)
 
-  Option B — Include routers directly in your existing app:
+  Option B â Include routers directly in your existing app:
     from feedback.routers import surveys, public_qr, responses, team, config, admin
     app.include_router(surveys.router, prefix="/api/v1")
     app.include_router(public_qr.router, prefix="/api/v1")
@@ -27,14 +27,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import surveys, public_qr, responses, team, config, admin
 
 app = FastAPI(
-    title="Customer Hub — Feedback Module",
+    title="Customer Hub â Feedback Module",
     description="Satisfaction surveys, QR codes, and analytics for Customer Hub tenants.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# CORS — adjust origins for your environment
+# CORS â adjust origins for your environment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*",  
@@ -47,7 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Register routers ──────────────────────────────────────────────────────────
+# ââ Register routers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 API_PREFIX = "/api/v1"
 
 app.include_router(surveys.router,    prefix=API_PREFIX)    # /organizations/{id}/feedback/surveys
@@ -79,3 +79,21 @@ def sidebar_entry():
         "icon":       "chat",
         "sort_order": 7,
     }
+
+@app.post("/api/v1/auth/login")
+def login(body: dict, db = Depends(get_db)):
+    from sqlalchemy import text as t
+    from jose import jwt
+    import datetime, os
+    email = body.get("email","").strip().lower()
+    user = db.execute(t("SELECT id, organization_id, full_name, role FROM users WHERE email=:e AND is_active=true"), {"e": email}).fetchone()
+    if not user:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+    token = jwt.encode(
+        {"sub": str(user[0]), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)},
+        os.getenv("JWT_SECRET_KEY","dev_secret_local_123"),
+        algorithm=os.getenv("JWT_ALGORITHM","HS256")
+    )
+    org = db.execute(t("SELECT name FROM organizations WHERE id=:i"), {"i": user[1]}).fetchone()
+    return {"access_token": token, "token_type": "bearer", "user_id": user[0], "org_id": user[1], "org_name": org[0] if org else "", "full_name": user[2], "role": user[3]}
