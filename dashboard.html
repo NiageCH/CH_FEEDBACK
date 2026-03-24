@@ -123,27 +123,7 @@ input:focus,select:focus{border-color:var(--p)}
   </div>
   <div class="content">
 
-    <div id="panel-setup" class="panel active">
-      <div class="setup-box">
-        <h2>Conectar con la API</h2>
-        <p>Introduce tu JWT token para ver los datos reales de tu API en localhost:8001</p>
-        <div class="fl"><label>JWT Token</label><input id="ti" placeholder="eyJhbGci..." style="font-family:monospace;font-size:10px"></div>
-        <div class="fl"><label>Organization ID</label><input id="oi" value="1" style="width:80px"></div>
-        <button class="btn btn-p" onclick="connect()" style="width:100%;justify-content:center;margin-top:4px">Conectar a localhost:8001</button>
-        <p style="font-size:10px;color:var(--tx3);margin-top:12px;text-align:center">Asegurate que uvicorn esta corriendo en el puerto 8001</p>
-      </div>
-    </div>
-
-    <div id="panel-overview" class="panel">
-      <div class="ph1">Feedback</div>
-      <div class="ph2" id="ov-sub">Cargando datos...</div>
-      <div class="st">Key Metrics</div>
-      <div class="metrics">
-        <div class="met"><div class="mv" id="m-score" style="color:var(--p)">--</div><div class="ml">Satisfaccion media</div><div class="ms" id="m-t">--</div></div>
-        <div class="met"><div class="mv" id="m-tot" style="color:var(--gn)">--</div><div class="ml">Respuestas totales</div><div class="ms">Ultimos 365 dias</div></div>
-        <div class="met"><div class="mv" id="m-hoy">--</div><div class="ml">Hoy</div><div class="ms">En vivo</div></div>
-        <div class="met"><div class="mv" id="m-enc">--</div><div class="ml">Encuestas activas</div><div class="ms">Este tenant</div></div>
-      </div>
+    
       <div class="st">Satisfaccion por pregunta</div>
       <div class="g2">
         <div class="card"><div class="ct">Indice por pregunta</div><div id="q-bars"></div></div>
@@ -216,6 +196,8 @@ input:focus,select:focus{border-color:var(--p)}
 </div>
 <div id="toast" class="toast"></div>
 <script>
+var TK='AUTO';var OID=1;localStorage.setItem('fb_tk',TK);localStorage.setItem('fb_oid','1');
+
 localStorage.setItem('fb_tk','AUTO');localStorage.setItem('fb_oid','1');
 const API='https://chfeedback-production.up.railway.app/api/v1';
 let TK=localStorage.getItem('fb_tk')||'';
@@ -269,7 +251,7 @@ async function connect(){
   }catch{toast('No se puede conectar. Asegurate que uvicorn corre en puerto 8001',true);}
 }
 
-function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-setup').classList.add('active');}
+function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-overview').classList.add('active');}
 
 async function loadOV(){
   try{
@@ -624,7 +606,7 @@ function copyQR(token){
 window.addEventListener('load',()=>{
   checkApi();setInterval(checkApi,15000);
   if(TK){
-    document.getElementById('panel-setup').classList.remove('active');
+    document.getElementById('panel-overview').classList.remove('active');
     document.getElementById('panel-overview').classList.add('active');
     loadOV();
   }
