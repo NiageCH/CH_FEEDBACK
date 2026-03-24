@@ -317,16 +317,12 @@ async function loadOverview() {
     if (!r.ok) return;
     const d = await r.json();
 
-    document.getElementById('kpi-total').textContent = (d.overall && d.overall.total_responses) || 0;
-    document.getElementById('kpi-today').textContent = (d.overall && d.overall.responses_today) || 0;
+    document.getElementById('kpi-total').textContent = d.total_responses || 0;
+    document.getElementById('kpi-today').textContent = d.responses_today || 0;
     document.getElementById('overview-date').textContent = 'Satisfaccion de clientes · ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
 
-    // Map nested schema: d.overall.total_responses etc
-    const ov = d.overall || {};
-    if (ov.total_responses != null) document.getElementById('kpi-total').textContent = ov.total_responses;
-    if (ov.responses_today != null) document.getElementById('kpi-today').textContent = ov.responses_today;
-    if (ov.satisfaction_score != null) {
-      document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
+    if (d.satisfaction_score != null) {
+      document.getElementById('kpi-score').textContent = d.satisfaction_score + '%';
       document.getElementById('kpi-score-sub').textContent = '';
     }
 
@@ -338,7 +334,7 @@ async function loadOverview() {
     }
 
     // Stars chart
-    const stars = d.score_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
+    const stars = d.stars_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
     if (starsChart) starsChart.destroy();
     starsChart = new Chart(document.getElementById('stars-chart'), {
       type: 'bar',
@@ -350,13 +346,13 @@ async function loadOverview() {
     });
 
     // Time series
-    if (d.time_series && d.time_series.length || d.time_series) {
+    if (d.time_series && d.time_series.length) {
       if (timeChart) timeChart.destroy();
       timeChart = new Chart(document.getElementById('time-chart'), {
         type: 'line',
         data: {
-          labels: d.time_series.map(p => p.date),
-          datasets: [{data: d.time_series.map(p => p.responses), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
+          labels: d.time_series.map(p => p.period),
+          datasets: [{data: d.time_series.map(p => p.count), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
         },
         options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8', maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
       });
