@@ -304,60 +304,44 @@ function showPanel(name) {
 }
 
 async function loadOverview() {
-  // Load surveys count
   try {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {headers: H()});
     const surveys = await r.json();
     document.getElementById('kpi-surveys').textContent = (surveys || []).filter(s => s.is_active).length;
   } catch(e) {}
-
-  // Load analytics
   try {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/analytics', {headers: H()});
     if (!r.ok) return;
     const d = await r.json();
-
-    document.getElementById('kpi-total').textContent = d.total_responses || 0;
-    document.getElementById('kpi-today').textContent = d.responses_today || 0;
+    const ov = d.overall || {};
+    document.getElementById('kpi-total').textContent = ov.total_responses || 0;
+    document.getElementById('kpi-today').textContent = ov.responses_today || 0;
     document.getElementById('overview-date').textContent = 'Satisfaccion de clientes · ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
-
-    if (d.satisfaction_score != null) {
-      document.getElementById('kpi-score').textContent = d.satisfaction_score + '%';
+    if (ov.satisfaction_score != null && ov.satisfaction_score > 0) {
+      document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
       document.getElementById('kpi-score-sub').textContent = '';
     }
-
-    // By question
     if (d.by_question && d.by_question.length) {
       document.getElementById('by-question-content').innerHTML = d.by_question.map(q =>
-        '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tx)">' + q.question_text.slice(0,40) + '</span><span style="color:var(--p);font-weight:600">' + (q.satisfaction_pct || 0) + '%</span></div><div style="background:var(--bg4);border-radius:4px;height:4px"><div style="background:var(--p);height:4px;border-radius:4px;width:' + (q.satisfaction_pct || 0) + '%"></div></div></div>'
+        '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tx)">' + q.question_text.slice(0,40) + '</span><span style="color:var(--p);font-weight:600">' + (q.satisfaction_pct||0) + '%</span></div><div style="background:var(--bg4);border-radius:4px;height:4px"><div style="background:var(--p);height:4px;border-radius:4px;width:' + (q.satisfaction_pct||0) + '%"></div></div></div>'
       ).join('');
     }
-
-    // Stars chart
-    const stars = d.stars_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
-    if (starsChart) starsChart.destroy();
-    starsChart = new Chart(document.getElementById('stars-chart'), {
+    const stars = d.score_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
+    if (window.starsChart) window.starsChart.destroy();
+    window.starsChart = new Chart(document.getElementById('stars-chart'), {
       type: 'bar',
-      data: {
-        labels: ['1★','2★','3★','4★','5★'],
-        datasets: [{data: [stars['1']||0, stars['2']||0, stars['3']||0, stars['4']||0, stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]
-      },
-      options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
+      data: {labels: ['1★','2★','3★','4★','5★'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
+      options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
     });
-
-    // Time series
     if (d.time_series && d.time_series.length) {
-      if (timeChart) timeChart.destroy();
-      timeChart = new Chart(document.getElementById('time-chart'), {
+      if (window.timeChart) window.timeChart.destroy();
+      window.timeChart = new Chart(document.getElementById('time-chart'), {
         type: 'line',
-        data: {
-          labels: d.time_series.map(p => p.period),
-          datasets: [{data: d.time_series.map(p => p.count), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
-        },
-        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8', maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
+        data: {labels: d.time_series.map(p => p.date), datasets: [{data: d.time_series.map(p => p.responses), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]},
+        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8',maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'},min:0}}}
       });
     }
-  } catch(e) {}
+  } catch(e) { console.error(e); }
 }
 
 async function loadSurveys() {
