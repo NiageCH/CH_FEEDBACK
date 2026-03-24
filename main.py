@@ -6,11 +6,11 @@ feedback/main.py
 FastAPI app entry point for the Feedback module.
 
 HOW TO INTEGRATE WITH YOUR EXISTING CUSTOMER HUB APP:
-  Option A â Mount as sub-app (recommended for separation):
+  Option A Ã¢ÂÂ Mount as sub-app (recommended for separation):
     from feedback.main import feedback_app
     main_app.mount("/feedback-module", feedback_app)
 
-  Option B â Include routers directly in your existing app:
+  Option B Ã¢ÂÂ Include routers directly in your existing app:
     from feedback.routers import surveys, public_qr, responses, team, config, admin
     app.include_router(surveys.router, prefix="/api/v1")
     app.include_router(public_qr.router, prefix="/api/v1")
@@ -27,14 +27,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import surveys, public_qr, responses, team, config, admin
 
 app = FastAPI(
-    title="Customer Hub â Feedback Module",
+    title="Customer Hub Ã¢ÂÂ Feedback Module",
     description="Satisfaction surveys, QR codes, and analytics for Customer Hub tenants.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# CORS â adjust origins for your environment
+# CORS Ã¢ÂÂ adjust origins for your environment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*",  
@@ -47,7 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ââ Register routers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Ã¢ÂÂÃ¢ÂÂ Register routers Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 API_PREFIX = "/api/v1"
 
 app.include_router(surveys.router,    prefix=API_PREFIX)    # /organizations/{id}/feedback/surveys
@@ -80,20 +80,22 @@ def sidebar_entry():
         "sort_order": 7,
     }
 
+
 @app.post("/api/v1/auth/login")
-def login(body: dict, db = Depends(get_db)):
-    from sqlalchemy import text as t
-    from jose import jwt
+def login(body: dict, db: Session = Depends(get_db)):
+    from sqlalchemy import text as sqla_text
     import datetime, os
-    email = body.get("email","").strip().lower()
-    user = db.execute(t("SELECT id, organization_id, full_name, role FROM users WHERE email=:e AND is_active=true"), {"e": email}).fetchone()
-    if not user:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-    token = jwt.encode(
-        {"sub": str(user[0]), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)},
-        os.getenv("JWT_SECRET_KEY","dev_secret_local_123"),
-        algorithm=os.getenv("JWT_ALGORITHM","HS256")
+    from jose import jwt as jose_jwt
+    email = (body.get("email") or "").strip().lower()
+    row = db.execute(sqla_text(
+        "SELECT id, organization_id, full_name, role FROM users WHERE lower(email)=:e AND is_active=true"
+    ), {"e": email}).fetchone()
+    if not row:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+    token = jose_jwt.encode(
+        {"sub": str(row[0]), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)},
+        os.getenv("JWT_SECRET_KEY", "dev_secret_local_123"),
+        algorithm=os.getenv("JWT_ALGORITHM", "HS256")
     )
-    org = db.execute(t("SELECT name FROM organizations WHERE id=:i"), {"i": user[1]}).fetchone()
-    return {"access_token": token, "token_type": "bearer", "user_id": user[0], "org_id": user[1], "org_name": org[0] if org else "", "full_name": user[2], "role": user[3]}
+    org = db.execute(sqla_text("SELECT name FROM organizations WHERE id=:i"), {"i": row[1]}).fetchone()
+    return {"access_token": token, "token_type": "bearer", "user_id": row[0], "org_id": row[1], "org_name": org[0] if org else "", "full_name": row[2], "role": row[3]}
