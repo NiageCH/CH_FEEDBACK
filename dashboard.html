@@ -275,6 +275,7 @@ let branches = [];
 
 // Auto-login on load
 async function init() {
+  TK = ''; // force fresh login
   try {
     const r = await fetch(API + '/auth/login', {
       method: 'POST',
