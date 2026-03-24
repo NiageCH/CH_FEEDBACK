@@ -80,7 +80,7 @@ def get_analytics(
     # Get survey IDs for this org first, then filter responses directly
     org_survey_ids = [
         r[0] for r in db.execute(
-            text("SELECT id FROM feedback_surveys WHERE organization_id=:oid AND is_active=true"),
+            sqla_text("SELECT id FROM feedback_surveys WHERE organization_id=:oid AND is_active=true"),
             {"oid": org_id}
         ).fetchall()
     ]
@@ -199,9 +199,9 @@ def get_analytics(
             score_dist[key] += 1
 
     # Per-branch breakdown
-    from sqlalchemy import text
+    from sqlalchemy import text as sqla_text
     branch_rows = db.execute(
-        text("SELECT id, name FROM branches WHERE organization_id = :org_id"),
+        sqla_text("SELECT id, name FROM branches WHERE organization_id = :org_id"),
         {"org_id": org_id}
     ).fetchall()
 
