@@ -6,11 +6,11 @@ feedback/main.py
 FastAPI app entry point for the Feedback module.
 
 HOW TO INTEGRATE WITH YOUR EXISTING CUSTOMER HUB APP:
-  Option A Ã¢ÂÂ Mount as sub-app (recommended for separation):
+  Option A ÃÂ¢ÃÂÃÂ Mount as sub-app (recommended for separation):
     from feedback.main import feedback_app
     main_app.mount("/feedback-module", feedback_app)
 
-  Option B Ã¢ÂÂ Include routers directly in your existing app:
+  Option B ÃÂ¢ÃÂÃÂ Include routers directly in your existing app:
     from feedback.routers import surveys, public_qr, responses, team, config, admin
     app.include_router(surveys.router, prefix="/api/v1")
     app.include_router(public_qr.router, prefix="/api/v1")
@@ -27,14 +27,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import surveys, public_qr, responses, team, config, admin
 
 app = FastAPI(
-    title="Customer Hub Ã¢ÂÂ Feedback Module",
+    title="Customer Hub ÃÂ¢ÃÂÃÂ Feedback Module",
     description="Satisfaction surveys, QR codes, and analytics for Customer Hub tenants.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# CORS Ã¢ÂÂ adjust origins for your environment
+# CORS ÃÂ¢ÃÂÃÂ adjust origins for your environment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*",  
@@ -47,7 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Ã¢ÂÂÃ¢ÂÂ Register routers Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+# ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Register routers ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 API_PREFIX = "/api/v1"
 
 app.include_router(surveys.router,    prefix=API_PREFIX)    # /organizations/{id}/feedback/surveys
@@ -80,6 +80,10 @@ def sidebar_entry():
         "sort_order": 7,
     }
 
+# ── Login endpoint (fase pruebas) ─────────────────────────────────────────────
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from dependencies import get_db
 
 @app.post("/api/v1/auth/login")
 def login(body: dict, db: Session = Depends(get_db)):
@@ -98,4 +102,8 @@ def login(body: dict, db: Session = Depends(get_db)):
         algorithm=os.getenv("JWT_ALGORITHM", "HS256")
     )
     org = db.execute(sqla_text("SELECT name FROM organizations WHERE id=:i"), {"i": row[1]}).fetchone()
-    return {"access_token": token, "token_type": "bearer", "user_id": row[0], "org_id": row[1], "org_name": org[0] if org else "", "full_name": row[2], "role": row[3]}
+    return {
+        "access_token": token, "token_type": "bearer",
+        "user_id": row[0], "org_id": row[1],
+        "org_name": org[0] if org else "", "full_name": row[2], "role": row[3]
+    }
