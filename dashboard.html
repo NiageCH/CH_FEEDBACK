@@ -204,7 +204,8 @@ input:focus,select:focus{border-color:var(--p)}
 </div>
 </div>
 <div id="toast" class="toast"></div>
-<script>localStorage.setItem('fb_tk','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc2OTMwMjg0fQ.v3xeIr_wLXc3buuCNw_1PguT9WJVPKPIEooZ0wj5GXI');localStorage.setItem('fb_oid','1');
+<script>
+localStorage.setItem('fb_tk','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc2OTMwMjg0fQ.v3xeIr_wLXc3buuCNw_1PguT9WJVPKPIEooZ0wj5GXI');localStorage.setItem('fb_oid','1');
 
 const API='https://chfeedback-production.up.railway.app/api/v1';
 let TK=localStorage.getItem('fb_tk')||'';
@@ -258,7 +259,7 @@ async function connect(){
   }catch{toast('No se puede conectar. Asegurate que uvicorn corre en puerto 8001',true);}
 }
 
-function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-overview').classList.add('active');}
+function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-setup').classList.add('active');}
 
 async function loadOV(){
   try{
@@ -613,7 +614,7 @@ function copyQR(token){
 window.addEventListener('load',()=>{
   checkApi();setInterval(checkApi,15000);
   if(TK){
-    document.getElementById('panel-overview').classList.remove('active');
+    document.getElementById('panel-setup').classList.remove('active');
     document.getElementById('panel-overview').classList.add('active');
     loadOV();
   }
