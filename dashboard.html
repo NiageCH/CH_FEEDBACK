@@ -310,7 +310,7 @@ async function loadOverview() {
     document.getElementById('kpi-surveys').textContent = (surveys || []).filter(s => s.is_active).length;
   } catch(e) {}
   try {
-    const r = await fetch(API + '/organizations/' + OID + '/feedback/analytics', {headers: H()});
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/analytics?start_date=2020-01-01', {headers: H()});
     if (!r.ok) return;
     const d = await r.json();
     const ov = d.overall || {};
