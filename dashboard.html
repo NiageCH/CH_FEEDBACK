@@ -355,8 +355,8 @@ async function loadOverview() {
       timeChart = new Chart(document.getElementById('time-chart'), {
         type: 'line',
         data: {
-          labels: d.time_series.map(p => p.period),
-          datasets: [{data: d.time_series.map(p => p.count), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
+          labels: d.time_series.map(p => p.date),
+          datasets: [{data: d.time_series.map(p => p.responses), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
         },
         options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8', maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
       });
