@@ -199,7 +199,6 @@ def get_analytics(
             score_dist[key] += 1
 
     # Per-branch breakdown
-    from sqlalchemy import text as sqla_text
     branch_rows = db.execute(
         sqla_text("SELECT id, name FROM branches WHERE organization_id = :org_id"),
         {"org_id": org_id}
