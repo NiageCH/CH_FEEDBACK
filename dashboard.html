@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Customer Hub Ã¢ÂÂ Feedback</title>
+<title>Customer Hub â Feedback</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -187,7 +187,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
           <div class="chart-wrap"><canvas id="stars-chart"></canvas></div>
         </div>
         <div class="card full">
-          <div class="card-title">Actividad Ã¢ÂÂ Ultimos 30 Dias</div>
+          <div class="card-title">Actividad â Ultimos 30 Dias</div>
           <div class="chart-wrap"><canvas id="time-chart"></canvas></div>
         </div>
       </div>
@@ -198,7 +198,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <div class="page-header">
         <div>
           <div class="page-title">Encuestas & QR</div>
-          <div class="page-sub">Un QR por encuesta Ã¢ÂÂ el cliente selecciona su tienda al escanear</div>
+          <div class="page-sub">Un QR por encuesta â el cliente selecciona su tienda al escanear</div>
         </div>
         <button class="btn btn-p" onclick="openNewSurvey()">+ Nueva encuesta</button>
       </div>
@@ -230,7 +230,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
   <div class="form-box" style="width:560px;max-height:85vh;overflow-y:auto">
     <div class="form-title">
       Nueva encuesta
-      <button class="close-btn" onclick="closeNewSurvey()">ÃÂ</button>
+      <button class="close-btn" onclick="closeNewSurvey()">Ã</button>
     </div>
 
     <div class="field">
@@ -249,9 +249,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     </div>
 
     <div class="field">
-      <label>Preguntas <span style="color:var(--tx3);font-size:10px">(puedes aÃÂ±adir hasta 5)</span></label>
+      <label>Preguntas <span style="color:var(--tx3);font-size:10px">(puedes aÃ±adir hasta 5)</span></label>
       <div id="ns-questions"></div>
-      <button class="btn btn-g" style="margin-top:8px;font-size:11px" onclick="addQuestion()">+ AÃÂ±adir pregunta</button>
+      <button class="btn btn-g" style="margin-top:8px;font-size:11px" onclick="addQuestion()">+ AÃ±adir pregunta</button>
     </div>
 
     <div class="form-actions">
@@ -275,8 +275,9 @@ let branches = [];
 
 // Auto-login on load
 async function init() {
+  TK = ''; // force fresh login
   try {
-    const r = await fetch(BASE + '/api/v1/auth/login', {
+    const r = await fetch(API + '/auth/login', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({email: 'admin@niage.es'})
@@ -290,15 +291,38 @@ async function init() {
       document.getElementById('api-dot').className = 'api-dot ok';
       document.getElementById('api-status-text').textContent = 'API OK v1.0.0';
     }
-  } catch(e) { console.error('login error:', e); }
+  } catch(e) {}
 
+  // Load branches from API
   try {
-    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/1/branches', {headers: H()});
+    const r = await fetch(API + '/organizations/' + OID + '/branches', {headers: H()});
     const d = await r.json();
-    branches = d.available || [];
+    branches = Array.isArray(d) ? d : (d.branches || []);
+    if(!branches.length) {
+      // fallback: get from surveys endpoint
+      const r2 = await fetch(API + '/organizations/' + OID + '/feedback/surveys/1/branches', {headers: H()});
+      const d2 = await r2.json();
+      branches = d2.available || [];
+    }
   } catch(e) {}
 
   loadOverview();
+}
+
+function H() {
+  return {'Authorization': 'Bearer ' + TK, 'Content-Type': 'application/json'};
+}
+
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('page-name').textContent = {
+    overview:'Feedback', surveys:'Encuestas & QR', responses:'Respuestas', config:'Configuracion'
+  }[name] || 'Feedback';
+
+  if (name === 'surveys') loadSurveys();
+  if (name === 'responses') loadResponses();
 }
 
 async function loadOverview() {
@@ -314,7 +338,7 @@ async function loadOverview() {
     const ov = d.overall || {};
     document.getElementById('kpi-total').textContent = ov.total_responses || 0;
     document.getElementById('kpi-today').textContent = ov.responses_today || 0;
-    document.getElementById('overview-date').textContent = 'Satisfaccion de clientes ÃÂ· ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('overview-date').textContent = 'Satisfaccion de clientes Â· ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
     if (ov.satisfaction_score != null && ov.satisfaction_score > 0) {
       document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
       document.getElementById('kpi-score-sub').textContent = '';
@@ -328,7 +352,7 @@ async function loadOverview() {
     if (window.starsChart) window.starsChart.destroy();
     window.starsChart = new Chart(document.getElementById('stars-chart'), {
       type: 'bar',
-      data: {labels: ['1Ã¢ÂÂ','2Ã¢ÂÂ','3Ã¢ÂÂ','4Ã¢ÂÂ','5Ã¢ÂÂ'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
+      data: {labels: ['1â','2â','3â','4â','5â'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
       options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
     });
     if (d.time_series && d.time_series.length) {
@@ -354,7 +378,7 @@ async function loadSurveys() {
         <div class="survey-header">
           <div style="flex:1">
             <div class="survey-name">${s.name}</div>
-            <div class="survey-meta">${s.responses_count||0} respuestas ÃÂ· ${s.questions_count||0} preguntas ÃÂ· <span class="qr-token">${s.qr_token.slice(0,20)}...</span></div>
+            <div class="survey-meta">${s.responses_count||0} respuestas Â· ${s.questions_count||0} preguntas Â· <span class="qr-token">${s.qr_token.slice(0,20)}...</span></div>
           </div>
           <span class="badge ${s.is_active ? 'badge-gn' : 'badge-rd'}">${s.is_active ? 'Activa' : 'Inactiva'}</span>
           <button class="copy-btn" onclick="copyQR('${s.qr_token}')">Copiar QR URL</button>
@@ -388,7 +412,7 @@ async function loadBranches(sid) {
       <label class="branch-item" style="border-color:${aids.has(b.id)?'rgba(250,213,27,.3)':'var(--bd2)'}">
         <input type="checkbox" class="branch-cb" id="cb-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.3)':'var(--bd2)'">
         <span class="branch-name">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:10px;color:var(--p);font-weight:700">Ã¢ÂÂ</span>':''}
+        ${aids.has(b.id)?'<span style="font-size:10px;color:var(--p);font-weight:700">â</span>':''}
       </label>`).join('');
   } catch(e) { if(el) el.innerHTML = '<div style="color:var(--tx3);font-size:12px">Error</div>'; }
 }
@@ -400,7 +424,7 @@ async function loadQuestions(sid) {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + sid, {headers: H()});
     const d = await r.json();
     const qs = (d.questions || []).filter(q => q.is_active);
-    const types = {stars:'Ã¢ÂÂ Estrellas', nps:'NPS', yesno:'Si/No', text:'Texto'};
+    const types = {stars:'â Estrellas', nps:'NPS', yesno:'Si/No', text:'Texto'};
     el.innerHTML = qs.length ? qs.map((q,i) => `
       <div class="q-item">
         <div class="q-num">${i+1}</div>
@@ -447,7 +471,7 @@ async function loadResponses() {
 
 
 let questionCount = 0;
-const Q_TYPES = {stars:'Ã¢ÂÂ Estrellas', nps:'NPS (0-10)', yesno:'Si / No', text:'Texto libre'};
+const Q_TYPES = {stars:'â Estrellas', nps:'NPS (0-10)', yesno:'Si / No', text:'Texto libre'};
 
 function openNewSurvey() {
   questionCount = 0;
@@ -491,7 +515,7 @@ function addQuestion() {
     <select id="qtype-${idx}" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:11px;font-family:inherit;outline:none">
       ${Object.entries(Q_TYPES).map(([v,l])=>`<option value="${v}"${v==='stars'?' selected':''}>${l}</option>`).join('')}
     </select>
-    <button onclick="document.getElementById('q-row-${idx}').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1">ÃÂ</button>
+    <button onclick="document.getElementById('q-row-${idx}').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1">Ã</button>
   `;
   container.appendChild(div);
 }
@@ -516,7 +540,7 @@ async function createSurvey() {
     const type = document.getElementById('qtype-'+idx)?.value || 'stars';
     if(text) questions.push({text, type, sort_order: i+1});
   });
-  if(!questions.length) { showToast('AÃÂ±ade al menos una pregunta'); return; }
+  if(!questions.length) { showToast('AÃ±ade al menos una pregunta'); return; }
 
   try {
     // 1. Create survey
