@@ -71,7 +71,7 @@ def get_analytics(
     base_filter = [
         FeedbackSurvey.organization_id == org_id,
         FeedbackResponse.created_at >= start_date,
-        FeedbackResponse.created_at <= end_date,
+        FeedbackResponse.created_at <= (end_date + __import__("datetime").timedelta(days=1)),
     ]
     if survey_id:
         base_filter.append(FeedbackResponse.survey_id == survey_id)
@@ -94,7 +94,7 @@ def get_analytics(
         .filter(
             FeedbackResponse.survey_id.in_(org_survey_ids),
             FeedbackResponse.created_at >= start_date,
-            FeedbackResponse.created_at <= end_date,
+            FeedbackResponse.created_at <= (end_date + __import__("datetime").timedelta(days=1)),
             *([FeedbackResponse.branch_id.in_(branch_ids)] if branch_ids else [])
         )
         .scalar() or 0
@@ -120,7 +120,7 @@ def get_analytics(
         .filter(
             FeedbackResponse.survey_id.in_(org_survey_ids),
             FeedbackResponse.created_at >= start_date,
-            FeedbackResponse.created_at <= end_date,
+            FeedbackResponse.created_at <= (end_date + __import__("datetime").timedelta(days=1)),
             FeedbackAnswer.value_num.isnot(None),
             *([FeedbackResponse.branch_id.in_(branch_ids)] if branch_ids else [])
         )
