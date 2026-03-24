@@ -2,33 +2,21 @@
 <html lang="es">
 <head>
 <script>
-// AUTO-LOGIN fase pruebas — sin interacción del usuario
-(function autoLogin() {
+<script>
+(function(){
   var BASE = 'https://chfeedback-production.up.railway.app';
-  function doAutoLogin() {
-    fetch(BASE + '/api/v1/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({email: 'admin@niage.es'})
-    }).then(function(r){ return r.json(); }).then(function(d) {
-      if (d.access_token) {
-        localStorage.setItem('fb_tk', d.access_token);
-        localStorage.setItem('fb_oid', '1');
-      }
-    }).catch(function(){});
-  }
-  // Run immediately and also on DOMContentLoaded
-  doAutoLogin();
-  document.addEventListener('DOMContentLoaded', function() {
-    doAutoLogin();
-    // Hide connect modal if present
-    setTimeout(function() {
-      var modal = document.getElementById('connect-modal') ||
-                  document.querySelector('[class*="connect"]') ||
-                  document.querySelector('[id*="connect"]');
-      if (modal) modal.style.display = 'none';
-    }, 500);
-  });
+  var tk = localStorage.getItem('fb_tk');
+  if(tk) return; // already logged in, let dashboard load normally
+  fetch(BASE+'/api/v1/auth/login',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:'admin@niage.es'})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.access_token){
+      localStorage.setItem('fb_tk',d.access_token);
+      localStorage.setItem('fb_oid','1');
+      window.location.reload(); // reload so dashboard picks up the token
+    }
+  }).catch(function(){});
 })();
 </script>
 
