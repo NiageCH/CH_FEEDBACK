@@ -1,44 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head><script>localStorage.setItem('fb_tk','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc2OTMwMjg0fQ.v3xeIr_wLXc3buuCNw_1PguT9WJVPKPIEooZ0wj5GXI');localStorage.setItem('fb_oid','1');</script>
+
 <script>
-(function(){
-  var BASE='https://chfeedback-production.up.railway.app';
-  if(localStorage.getItem('fb_tk')){return;}
-  // Block page render until token arrives
-  document.documentElement.style.visibility='hidden';
-  fetch(BASE+'/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'admin@niage.es'})})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(d.access_token){
-      localStorage.setItem('fb_tk',d.access_token);
-      localStorage.setItem('fb_oid','1');
-    }
-    document.documentElement.style.visibility='visible';
-    window.location.reload();
-  }).catch(function(){
-    document.documentElement.style.visibility='visible';
-  });
-})();
-</script>
-<script>
-<script>
-(function(){
-  var BASE = 'https://chfeedback-production.up.railway.app';
-  var tk = localStorage.getItem('fb_tk');
-  if(tk) return; // already logged in, let dashboard load normally
-  fetch(BASE+'/api/v1/auth/login',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:'admin@niage.es'})
-  }).then(function(r){return r.json();}).then(function(d){
-    if(d.access_token){
-      localStorage.setItem('fb_tk',d.access_token);
-      localStorage.setItem('fb_oid','1');
-      window.location.reload(); // reload so dashboard picks up the token
-    }
-  }).catch(function(){});
-})();
-</script>
+
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -187,20 +152,20 @@ input:focus,select:focus{border-color:var(--p)}
       <div class="g2">
         <div class="card"><div class="ct">Indice por pregunta</div><div id="q-bars"></div></div>
         <div class="card"><div class="ct">Distribucion de puntuaciones (estrellas)</div><canvas id="dc" style="max-height:140px"></canvas></div>
-        <div class="card" style="grid-column:span 2"><div class="ct">Actividad — ultimos 30 dias</div><canvas id="ac" style="max-height:110px"></canvas></div>
+        <div class="card" style="grid-column:span 2"><div class="ct">Actividad â ultimos 30 dias</div><canvas id="ac" style="max-height:110px"></canvas></div>
       </div>
     </div>
 
     <div id="panel-surveys" class="panel">
       <div class="ph1" style="display:flex;align-items:center;gap:12px">Encuestas &amp; QR <button class="btn btn-p" onclick="showCreateSurvey()" style="font-size:11px;padding:5px 12px">+ Nueva encuesta</button></div>
-      <div class="ph2">El QR es permanente — las preguntas se pueden cambiar sin reimprimir</div>
+      <div class="ph2">El QR es permanente â las preguntas se pueden cambiar sin reimprimir</div>
       <div class="card" style="margin-bottom:12px">
         <div class="ct">Encuestas activas</div>
         <div id="surveys-list"><div style="color:var(--tx3)">Cargando...</div></div>
       </div>
       <div class="card" id="q-card" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div class="ct" style="margin:0">Preguntas activas · <span id="survey-name-lbl" style="color:var(--p);text-transform:none;letter-spacing:0"></span></div>
+          <div class="ct" style="margin:0">Preguntas activas Â· <span id="survey-name-lbl" style="color:var(--p);text-transform:none;letter-spacing:0"></span></div>
           <div style="font-size:10px;color:var(--tx3);font-family:monospace" id="qr-token-lbl"></div>
         </div>
         <div id="questions-list"></div>
@@ -223,7 +188,7 @@ input:focus,select:focus{border-color:var(--p)}
 
     <div id="panel-responses" class="panel">
       <div class="ph1">Respuestas</div>
-      <div class="ph2">Todas anonimas — sin datos personales</div>
+      <div class="ph2">Todas anonimas â sin datos personales</div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
           <div class="ct" style="margin:0">Ultimas respuestas (30 dias)</div>
@@ -317,7 +282,7 @@ async function loadOV(){
       fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()}).then(r=>r.json()),
       fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=200`,{headers:H()}).then(r=>r.json()),
     ]);
-    document.getElementById('ov-sub').textContent=`Satisfaccion de clientes · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}`;
+    document.getElementById('ov-sub').textContent=`Satisfaccion de clientes Â· ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}`;
     document.getElementById('m-enc').textContent=Array.isArray(surveys)?surveys.filter(s=>s.is_active).length:'--';
     const rs=resps.responses||[];
     const todayStr=today;
@@ -352,7 +317,7 @@ async function loadOV(){
     rs.forEach(r=>(r.answers||[]).forEach(a=>{if(a.type==='stars'&&a.value_num)dist[Math.round(a.value_num)-1]++;}));
     dChart=new Chart(document.getElementById('dc').getContext('2d'),{
       type:'bar',
-      data:{labels:['1★','2★','3★','4★','5★'],datasets:[{data:dist,backgroundColor:'rgba(250,213,27,.25)',borderColor:'#fad51b',borderWidth:2,borderRadius:4}]},
+      data:{labels:['1â','2â','3â','4â','5â'],datasets:[{data:dist,backgroundColor:'rgba(250,213,27,.25)',borderColor:'#fad51b',borderWidth:2,borderRadius:4}]},
       options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666'},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
     });
 
@@ -639,11 +604,11 @@ async function loadR(){
     tb.innerHTML=rs.map((r,i)=>{
       const pc=(r.satisfaction_score||0)>=70?'phi':(r.satisfaction_score||0)>=40?'pmi':'plo';
       const ans=(r.answers||[]).map(a=>{
-        if(a.type==='stars')return a.value_num?'★'.repeat(+a.value_num)+'☆'.repeat(5-+a.value_num):'';
+        if(a.type==='stars')return a.value_num?'â'.repeat(+a.value_num)+'â'.repeat(5-+a.value_num):'';
         if(a.type==='nps')return a.value_num!=null?a.value_num+'/10':'';
         if(a.type==='yesno')return +a.value_num===1?'Si':'No';
         return a.value_text?a.value_text.slice(0,20):'';
-      }).filter(Boolean).join(' · ');
+      }).filter(Boolean).join(' Â· ');
       return `<tr>
         <td style="color:var(--tx3)">${rs.length-i}</td>
         <td>${new Date(r.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
