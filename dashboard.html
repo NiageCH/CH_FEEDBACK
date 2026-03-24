@@ -3,1144 +3,512 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Customer Hub - Feedback</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>Customer Hub — Feedback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --p:#fad51b;--p10:rgba(250,213,27,.10);--p20:rgba(250,213,27,.20);
-  --dk:#1d1d1d;--dk2:#2a2a2a;--dk3:#222;
-  --bd:#3f3f3f;--bd2:rgba(255,255,255,.08);
-  --tx:#e3e3e3;--tx2:#9a9a9a;--tx3:#666;
-  --gn:#01a77d;--rd:#e55;
+:root {
+  --bg: #0e0e11;
+  --bg2: #16161a;
+  --bg3: #1e1e24;
+  --bg4: #26262e;
+  --p: #fad51b;
+  --p2: rgba(250,213,27,.12);
+  --p3: rgba(250,213,27,.06);
+  --tx: #f0f0f4;
+  --tx2: #9898a8;
+  --tx3: #55555f;
+  --bd: rgba(255,255,255,.07);
+  --bd2: rgba(255,255,255,.04);
+  --gn: #22d3a0;
+  --rd: #ff5566;
+  --radius: 12px;
+  --sidebar: 220px;
 }
-body{font-family:Inter,system-ui,sans-serif;background:var(--dk);color:var(--tx);min-height:100vh;font-size:13px}
-.shell{display:flex;min-height:100vh}
-.sb{width:220px;background:var(--dk3);border-right:1px solid var(--bd2);flex-shrink:0;display:flex;flex-direction:column}
-.main{flex:1;display:flex;flex-direction:column}
-.topbar{height:51px;background:var(--dk3);border-bottom:1px solid var(--bd2);display:flex;align-items:center;padding:0 1.5rem;gap:1rem}
-.topbar-title{flex:1;font-size:13px;color:var(--tx2)}
-.topbar-title span{color:var(--p)}
-.av{width:28px;height:28px;background:var(--p20);border:1px solid var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--p)}
-.sb-logo{padding:14px 14px 10px;border-bottom:1px solid var(--bd2);display:flex;align-items:center;gap:8px}
-.lm{width:28px;height:28px;background:var(--p);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--dk);flex-shrink:0}
-.sb-item{display:flex;align-items:center;gap:9px;padding:8px 14px;color:var(--tx2);cursor:pointer;transition:all .15s;font-size:12px;border-left:2px solid transparent}
-.sb-item:hover{color:var(--tx);background:var(--p10)}
-.sb-item.active{color:var(--p);border-left-color:var(--p);background:var(--p10)}
-.sd{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-.sb-sec{padding:10px 0 4px}
-.sb-lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);padding:0 14px 5px}
-.sb-foot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bd2);font-size:10px;color:var(--tx3)}
-.sb-foot strong{display:block;color:var(--tx2);margin-bottom:2px}
-.api-s{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx3);margin-top:8px;padding:4px 10px;background:var(--dk);border:1px solid var(--bd);border-radius:4px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--rd);flex-shrink:0}
-.dot.ok{background:var(--gn)}
-.content{flex:1;overflow-y:auto;padding:1.75rem}
-.panel{display:none}.panel.active{display:block}
-.ph1{font-size:24px;font-weight:700;color:var(--tx);margin-bottom:3px}
-.ph2{font-size:12px;color:var(--tx2);margin-bottom:1.5rem}
-.st{font-size:11px;font-weight:600;color:var(--p);letter-spacing:.06em;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
-.st::before{content:'';width:6px;height:6px;background:var(--p);border-radius:2px;display:inline-block}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
-.met{background:var(--dk2);border:1px solid var(--bd2);border-radius:10px;padding:1.1rem;text-align:center}
-.mv{font-size:26px;font-weight:700;margin-bottom:3px}
-.ml{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em}
-.ms{font-size:10px;color:var(--tx3);margin-top:2px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.card{background:var(--dk2);border:1px solid var(--bd2);border-radius:10px;padding:1.25rem}
-.ct{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);margin-bottom:1rem}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:7px 10px;border-bottom:1px solid var(--bd2);font-weight:500}
-td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--tx2);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-.badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
-.bs{background:var(--p20);color:var(--p);border:1px solid rgba(250,213,27,.3)}
-.bn{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
-.by{background:rgba(1,167,125,.12);color:var(--gn);border:1px solid rgba(1,167,125,.25)}
-.bt{background:rgba(255,255,255,.06);color:var(--tx2);border:1px solid var(--bd)}
-.bon{background:rgba(1,167,125,.15);color:var(--gn);border:1px solid rgba(1,167,125,.3)}
-.bof{background:rgba(238,85,85,.12);color:var(--rd);border:1px solid rgba(238,85,85,.25)}
-.pill{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:12px;font-weight:600}
-.phi{background:rgba(1,167,125,.15);color:var(--gn)}
-.pmi{background:var(--p20);color:var(--p)}
-.plo{background:rgba(238,85,85,.12);color:var(--rd)}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;border:1px solid;transition:all .15s;font-weight:500}
-.btn-p{background:var(--p);color:var(--dk);border-color:var(--p)}.btn-p:hover{opacity:.85}
-.btn-g{background:transparent;color:var(--tx2);border-color:var(--bd)}.btn-g:hover{border-color:var(--tx2);color:var(--tx)}
-.fl{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.fl label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)}
-input,select{background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;transition:border .15s;width:100%}
-input:focus,select:focus{border-color:var(--p)}
-.qi{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--dk3);border:1px solid var(--bd2);border-radius:8px;margin-bottom:7px}
-.qn{width:22px;height:22px;border-radius:5px;background:var(--p20);border:1px solid rgba(250,213,27,.3);color:var(--p);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.br{margin-bottom:9px}
-.bm{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
-.bm span{color:var(--tx2)}.bm strong{color:var(--tx)}
-.bt2{height:5px;background:var(--dk3);border-radius:3px;overflow:hidden}
-.bf{height:100%;border-radius:3px}
-.fp{background:var(--p)}.fg{background:var(--gn)}.fr{background:var(--rd)}
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--dk2);border:1px solid var(--p);color:var(--p);padding:7px 18px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999}
-.toast.show{opacity:1}
-.setup-box{background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:2rem;max-width:440px;margin:3rem auto}
-.setup-box h2{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--tx)}
-.setup-box p{font-size:12px;color:var(--tx2);margin-bottom:1.5rem;line-height:1.7}
-.qr-preview{background:#fff;border-radius:8px;padding:8px;width:100px;height:100px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:10px;color:#333;text-align:center}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:10;}
+.logo{padding:20px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:var(--p);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0e0e11;}
+.logo-text{font-size:13px;font-weight:600;color:var(--tx);}
+.logo-sub{font-size:10px;color:var(--tx3);}
+.nav{flex:1;padding:12px 8px;overflow-y:auto;}
+.nav-section{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);padding:8px 10px 4px;margin-top:8px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--tx2);transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--bg3);color:var(--tx);}
+.nav-item.active{background:var(--p2);color:var(--p);font-weight:500;}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--bd);}
+.user-info{font-size:11px;font-weight:500;color:var(--tx);}
+.user-email{font-size:10px;color:var(--tx3);}
+.api-status{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--tx3);}
+.api-dot{width:6px;height:6px;border-radius:50%;background:var(--rd);}
+.api-dot.ok{background:var(--gn);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;background:var(--bg);}
+.breadcrumb{font-size:13px;color:var(--tx2);}
+.breadcrumb span{color:var(--tx);font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.org-badge{font-size:12px;color:var(--tx2);}
+.avatar{width:30px;height:30px;background:var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0e0e11;}
+.content{flex:1;padding:28px;}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* OVERVIEW */
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--tx3);margin-bottom:24px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:18px 20px;}
+.kpi-val{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px;}
+.kpi-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);}
+.kpi-sub{font-size:11px;color:var(--tx3);margin-top:2px;}
+.kpi.highlight{border-color:rgba(250,213,27,.2);background:rgba(250,213,27,.04);}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:20px;}
+.card-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:16px;}
+.card.full{grid-column:1/-1;}
+.chart-wrap{position:relative;height:180px;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--tx3);font-size:12px;}
+
+/* SURVEYS */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-p{background:var(--p);color:#0e0e11;}
+.btn-p:hover{opacity:.85;}
+.btn-g{background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);}
+.btn-g:hover{color:var(--tx);border-color:var(--bd);}
+.survey-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.survey-header{display:flex;align-items:center;gap:12px;padding:16px 18px;}
+.survey-name{font-size:14px;font-weight:600;flex:1;}
+.survey-meta{font-size:10px;color:var(--tx3);margin-top:3px;}
+.badge{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;}
+.badge-gn{background:rgba(34,211,160,.12);color:var(--gn);border:1px solid rgba(34,211,160,.2);}
+.badge-rd{background:rgba(255,85,102,.1);color:var(--rd);border:1px solid rgba(255,85,102,.2);}
+.survey-body{border-top:1px solid var(--bd2);padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.section-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;}
+.branch-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;margin-bottom:6px;}
+.branch-cb{accent-color:var(--p);width:14px;height:14px;}
+.branch-name{font-size:12px;color:var(--tx);flex:1;}
+.q-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd2);}
+.q-num{width:18px;height:18px;border-radius:4px;background:var(--p2);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.q-text{flex:1;font-size:11px;color:var(--tx);}
+.q-type{font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p2);color:var(--p);}
+.qr-token{font-family:'DM Mono',monospace;font-size:10px;color:var(--tx3);}
+.copy-btn{background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;}
+
+/* NEW SURVEY FORM */
+.form-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;}
+.form-overlay.open{display:flex;}
+.form-box{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:24px;width:500px;max-width:90vw;}
+.form-title{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.close-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:20px;line-height:1;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;}
+.field input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;color:var(--tx);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.field input:focus{border-color:rgba(250,213,27,.3);}
+.branches-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.branch-cb-label{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx);}
+.form-actions{display:flex;gap:8px;margin-top:20px;}
+
+/* RESPONSES */
+.table{width:100%;border-collapse:collapse;}
+.table th{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);padding:10px 12px;text-align:left;border-bottom:1px solid var(--bd);}
+.table td{padding:11px 12px;font-size:12px;border-bottom:1px solid var(--bd2);color:var(--tx2);}
+.table tr:last-child td{border-bottom:none;}
+.score-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--p);color:var(--p);padding:10px 16px;border-radius:8px;font-size:12px;font-weight:500;transform:translateY(80px);opacity:0;transition:all .3s;z-index:200;}
+.toast.show{transform:translateY(0);opacity:1;}
 </style>
 </head>
 <body>
-<div class="shell">
-<div class="sb">
-  <div class="sb-logo">
-    <div class="lm">CH</div>
-    <div><div style="font-size:12px;font-weight:600;color:var(--tx)">Customer Hub</div><div style="font-size:9px;color:var(--tx3)">Feedback Module</div></div>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">CH</div>
+    <div>
+      <div class="logo-text">Customer Hub</div>
+      <div class="logo-sub">Feedback Module</div>
+    </div>
   </div>
-  <div class="sb-sec">
-    <div class="sb-lbl">Principal</div>
-    <div class="sb-item" onclick="extNav('Dashboard')"><div class="sd"></div>Dashboard</div>
-    <div class="sb-item" onclick="extNav('AI Insights')"><div class="sd"></div>AI Insights</div>
-    <div class="sb-item" onclick="extNav('Data Export')"><div class="sd"></div>Data Export</div>
-  </div>
-  <div class="sb-sec">
-    <div class="sb-lbl">Feedback</div>
-    <div class="sb-item active" onclick="nav(this,'overview')"><div class="sd"></div>Resumen</div>
-    <div class="sb-item" onclick="nav(this,'surveys')"><div class="sd"></div>Encuestas &amp; QR</div>
-    <div class="sb-item" onclick="nav(this,'responses')"><div class="sd"></div>Respuestas</div>
-    <div class="sb-item" onclick="nav(this,'config')"><div class="sd"></div>Configuracion</div>
-  </div>
-  <div class="sb-foot">
-    <strong id="sb-user">Admin Test</strong>
-    admin@test.com
-    <div class="api-s"><div class="dot" id="api-dot"></div><span id="api-txt">Conectando...</span></div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <button class="nav-item" onclick="showPanel('overview')"><span class="nav-dot"></span>Dashboard</button>
+    <div class="nav-section">Feedback</div>
+    <button class="nav-item active" onclick="showPanel('overview')"><span class="nav-dot"></span>Resumen</button>
+    <button class="nav-item" onclick="showPanel('surveys')"><span class="nav-dot"></span>Encuestas & QR</button>
+    <button class="nav-item" onclick="showPanel('responses')"><span class="nav-dot"></span>Respuestas</button>
+    <button class="nav-item" onclick="showPanel('config')"><span class="nav-dot"></span>Configuracion</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info" id="user-name">Admin Demo</div>
+    <div class="user-email">admin@niage.es</div>
+    <div class="api-status"><div class="api-dot" id="api-dot"></div><span id="api-status-text">Conectando...</span></div>
   </div>
 </div>
+
 <div class="main">
   <div class="topbar">
-    <div class="topbar-title">Customer Hub &nbsp;/&nbsp;<span>Feedback</span></div>
-    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2)">
-      <span id="org-name">Nova Moda Test</span>
-      <div class="av">A</div>
+    <div class="breadcrumb">Customer Hub / <span id="page-name">Feedback</span></div>
+    <div class="topbar-right">
+      <div class="org-badge" id="org-name">Niage Demo</div>
+      <div class="avatar">A</div>
     </div>
   </div>
+
   <div class="content">
 
-    <div id="panel-overview" class="panel">
-      <div class="ph1">Feedback</div>
-      <div class="ph2" id="ov-sub">Cargando datos...</div>
-      <div class="st">Key Metrics</div>
-      <div class="metrics">
-        <div class="met"><div class="mv" id="m-score" style="color:var(--p)">--</div><div class="ml">Satisfaccion media</div><div class="ms" id="m-t">--</div></div>
-        <div class="met"><div class="mv" id="m-tot" style="color:var(--gn)">--</div><div class="ml">Respuestas totales</div><div class="ms">Ultimos 365 dias</div></div>
-        <div class="met"><div class="mv" id="m-hoy">--</div><div class="ml">Hoy</div><div class="ms">En vivo</div></div>
-        <div class="met"><div class="mv" id="m-enc">--</div><div class="ml">Encuestas activas</div><div class="ms">Este tenant</div></div>
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="page-title">Feedback</div>
+      <div class="page-sub" id="overview-date">Satisfaccion de clientes</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-val" id="kpi-score">--</div><div class="kpi-label">Satisfaccion Media</div><div class="kpi-sub" id="kpi-score-sub">Sin datos aun</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-total">0</div><div class="kpi-label">Respuestas Totales</div><div class="kpi-sub">Ultimos 365 dias</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-today">0</div><div class="kpi-label">Hoy</div><div class="kpi-sub">En vivo</div></div>
+        <div class="kpi highlight"><div class="kpi-val" id="kpi-surveys">0</div><div class="kpi-label">Encuestas Activas</div><div class="kpi-sub">Este tenant</div></div>
       </div>
-      <div class="st">Satisfaccion por pregunta</div>
-      <div class="g2">
-        <div class="card"><div class="ct">Indice por pregunta</div><div id="q-bars"></div></div>
-        <div class="card"><div class="ct">Distribucion de puntuaciones (estrellas)</div><canvas id="dc" style="max-height:140px"></canvas></div>
-        <div class="card" style="grid-column:span 2"><div class="ct">Actividad — ultimos 30 dias</div><canvas id="ac" style="max-height:110px"></canvas></div>
-      </div>
-    </div>
-
-    <div id="panel-surveys" class="panel">
-      <div class="ph1" style="display:flex;align-items:center;gap:12px">Encuestas &amp; QR <button class="btn btn-p" onclick="showCreateSurvey()" style="font-size:11px;padding:5px 12px">+ Nueva encuesta</button></div>
-      <div class="ph2">El QR es permanente — las preguntas se pueden cambiar sin reimprimir</div>
-      <div class="card" style="margin-bottom:12px">
-        <div class="ct">Encuestas activas</div>
-        <div id="surveys-list"><div style="color:var(--tx3)">Cargando...</div></div>
-      </div>
-      <div class="card" id="q-card" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div class="ct" style="margin:0">Preguntas activas · <span id="survey-name-lbl" style="color:var(--p);text-transform:none;letter-spacing:0"></span></div>
-          <div style="font-size:10px;color:var(--tx3);font-family:monospace" id="qr-token-lbl"></div>
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-title">Satisfaccion por Pregunta</div>
+          <div id="by-question-content"><div class="empty-state">Sin respuestas aun</div></div>
         </div>
-        <div id="questions-list"></div>
-        <div style="border-top:1px solid var(--bd2);padding-top:12px;margin-top:4px">
-          <div style="display:flex;gap:8px;align-items:flex-end">
-            <div class="fl" style="flex:2;margin:0"><label>Nueva pregunta</label><input id="nqt" placeholder="Escribe la pregunta..."></div>
-            <div class="fl" style="flex:1;margin:0"><label>Tipo</label>
-              <select id="nqty">
-                <option value="stars">Estrellas (1-5)</option>
-                <option value="nps">NPS (0-10)</option>
-                <option value="yesno">Si / No</option>
-                <option value="text">Texto libre</option>
-              </select>
-            </div>
-            <button class="btn btn-p" onclick="addQ()">+ Anadir</button>
-          </div>
+        <div class="card">
+          <div class="card-title">Distribucion de Puntuaciones (Estrellas)</div>
+          <div class="chart-wrap"><canvas id="stars-chart"></canvas></div>
+        </div>
+        <div class="card full">
+          <div class="card-title">Actividad — Ultimos 30 Dias</div>
+          <div class="chart-wrap"><canvas id="time-chart"></canvas></div>
         </div>
       </div>
     </div>
 
-    <div id="panel-responses" class="panel">
-      <div class="ph1">Respuestas</div>
-      <div class="ph2">Todas anonimas — sin datos personales</div>
+    <!-- SURVEYS -->
+    <div class="panel" id="panel-surveys">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Encuestas & QR</div>
+          <div class="page-sub">Un QR por encuesta — el cliente selecciona su tienda al escanear</div>
+        </div>
+        <button class="btn btn-p" onclick="openNewSurvey()">+ Nueva encuesta</button>
+      </div>
+      <div id="surveys-list"><div class="empty-state">Cargando...</div></div>
+    </div>
+
+    <!-- RESPONSES -->
+    <div class="panel" id="panel-responses">
+      <div class="page-title" style="margin-bottom:20px">Respuestas</div>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div class="ct" style="margin:0">Ultimas respuestas (30 dias)</div>
-          <button class="btn btn-g" onclick="loadR()">Actualizar</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>#</th><th>Fecha</th><th>Sucursal</th><th>Respuestas</th><th>Score</th></tr></thead>
-            <tbody id="rtb"></tbody>
-          </table>
-        </div>
+        <table class="table">
+          <thead><tr><th>Fecha</th><th>Encuesta</th><th>Tienda</th><th>Score</th><th>Dispositivo</th></tr></thead>
+          <tbody id="responses-body"><tr><td colspan="5" style="text-align:center;color:var(--tx3)">Cargando...</td></tr></tbody>
+        </table>
       </div>
     </div>
 
-    <div id="panel-config" class="panel">
-      <div class="ph1">Configuracion</div>
-      <div class="ph2">Conexion con la API local</div>
-      <div class="card" style="max-width:440px">
-        <div class="ct">Estado de la conexion</div>
-        <div class="fl"><label>API URL</label><input value="https://chfeedback-production.up.railway.app" readonly></div>
-        <div class="fl"><label>JWT Token activo</label><input id="td" readonly style="font-family:monospace;font-size:10px"></div>
-        <div class="fl"><label>Organization ID</label><input id="od" readonly style="width:80px"></div>
-        <button class="btn btn-g" onclick="disco()">Cambiar token</button>
-      </div>
+    <!-- CONFIG -->
+    <div class="panel" id="panel-config">
+      <div class="page-title" style="margin-bottom:20px">Configuracion</div>
+      <div class="card"><div class="empty-state">Proximamente</div></div>
     </div>
 
   </div>
 </div>
+
+<!-- NEW SURVEY FORM -->
+<div class="form-overlay" id="form-overlay">
+  <div class="form-box">
+    <div class="form-title">
+      Nueva encuesta
+      <button class="close-btn" onclick="closeNewSurvey()">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Nombre</label><input id="ns-name" placeholder="Ej: Valoracion verano 2026"></div>
+      <div class="field"><label>Mensaje de gracias</label><input id="ns-thanks" value="Gracias por tu opinion"></div>
+    </div>
+    <div class="field">
+      <label>Tiendas asignadas</label>
+      <div class="branches-grid" id="ns-branches"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-p" onclick="createSurvey()">Crear encuesta</button>
+      <button class="btn btn-g" onclick="closeNewSurvey()">Cancelar</button>
+    </div>
+  </div>
 </div>
-<div id="toast" class="toast"></div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-localStorage.setItem('fb_tk','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzc2OTMwMjg0fQ.v3xeIr_wLXc3buuCNw_1PguT9WJVPKPIEooZ0wj5GXI');localStorage.setItem('fb_oid','1');
+const BASE = 'https://chfeedback-production.up.railway.app';
+const API = BASE + '/api/v1';
+let TK = '';
+let OID = '1';
+let starsChart = null;
+let timeChart = null;
+let branches = [];
 
-const API='https://chfeedback-production.up.railway.app/api/v1';
-let TK=localStorage.getItem('fb_tk')||'';
-let OID=localStorage.getItem('fb_oid')||'1';
-let curSid=null;
-let dChart=null,aChart=null;
-const H=()=>({'Authorization':'Bearer '+TK,'Content-Type':'application/json'});
-
-function toast(msg,err){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.borderColor=err?'var(--rd)':'var(--p)';t.style.color=err?'var(--rd)':'var(--p)';
-  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
-}
-
-async function checkApi(){
-  try{
-    const r=await fetch('https://chfeedback-production.up.railway.app/health');
-    const d=await r.json();
-    document.getElementById('api-dot').classList.add('ok');
-    document.getElementById('api-txt').textContent='API OK v'+d.version;
-  }catch{
-    document.getElementById('api-dot').classList.remove('ok');
-    document.getElementById('api-txt').textContent='API no disponible';
-  }
-}
-
-function nav(el,panel){
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  el.classList.add('active');
-  ['setup','overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
-  document.getElementById('panel-'+panel).classList.add('active');
-  if(panel==='overview')loadOV();
-  if(panel==='surveys')loadSurveys();
-  if(panel==='responses')loadR();
-  if(panel==='config'){document.getElementById('td').value=TK;document.getElementById('od').value=OID;}
-}
-
-function extNav(n){window.open('https://democba.niage.es/'+n.toLowerCase().replace(' ','-'),'_blank');}
-
-async function connect(){
-  TK=document.getElementById('ti').value.trim();
-  OID=document.getElementById('oi').value.trim()||'1';
-  if(!TK){toast('Introduce el JWT token',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()});
-    if(r.status===401){toast('Token invalido o expirado',true);return;}
-    localStorage.setItem('fb_tk',TK);localStorage.setItem('fb_oid',OID);
-    ['setup'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
-    document.getElementById('panel-overview').classList.add('active');
-    loadOV();toast('Conectado');
-  }catch{toast('No se puede conectar. Asegurate que uvicorn corre en puerto 8001',true);}
-}
-
-function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-overview').classList.add('active');}
-
-async function loadOV(){
-  try{
-    const today=new Date().toISOString().split('T')[0];
-    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
-    const [surveys,resps]=await Promise.all([
-      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()}).then(r=>r.json()),
-      fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=200`,{headers:H()}).then(r=>r.json()),
-    ]);
-    document.getElementById('ov-sub').textContent=`Satisfaccion de clientes · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}`;
-    document.getElementById('m-enc').textContent=Array.isArray(surveys)?surveys.filter(s=>s.is_active).length:'--';
-    const rs=resps.responses||[];
-    const todayStr=today;
-    document.getElementById('m-hoy').textContent=rs.filter(r=>r.created_at?.startsWith(todayStr)).length;
-    document.getElementById('m-tot').textContent=rs.length;
-    if(rs.length){
-      const avg=rs.reduce((a,r)=>a+(r.satisfaction_score||0),0)/rs.length;
-      document.getElementById('m-score').textContent=Math.round(avg)+'%';
-      document.getElementById('m-t').textContent='Basado en '+rs.length+' respuestas';
-    }else{document.getElementById('m-score').textContent='--';document.getElementById('m-t').textContent='Sin datos aun';}
-
-    const qMap={};
-    rs.forEach(r=>(r.answers||[]).forEach(a=>{
-      if(!qMap[a.question_id])qMap[a.question_id]={text:a.question_text,type:a.type,vals:[]};
-      if(a.value_num!=null)qMap[a.question_id].vals.push(+a.value_num);
-    }));
-    const bars=document.getElementById('q-bars');
-    const qs=Object.values(qMap).slice(0,5);
-    if(qs.length){
-      bars.innerHTML=qs.map(q=>{
-        let pct=0;
-        if(q.type==='stars')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/5*100):0;
-        else if(q.type==='nps')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/10*100):0;
-        else if(q.type==='yesno')pct=q.vals.length?Math.round(q.vals.filter(v=>v===1).length/q.vals.length*100):0;
-        const cls=pct>=70?'fg':pct>=40?'fp':'fr';
-        return `<div class="br"><div class="bm"><span>${q.text.slice(0,42)}${q.text.length>42?'...':''}</span><strong>${pct}%</strong></div><div class="bt2"><div class="bf ${cls}" style="width:${pct}%"></div></div></div>`;
-      }).join('');
-    }else{bars.innerHTML='<div style="color:var(--tx3);font-size:12px">Sin respuestas aun</div>';}
-
-    if(dChart)dChart.destroy();
-    const dist=[0,0,0,0,0];
-    rs.forEach(r=>(r.answers||[]).forEach(a=>{if(a.type==='stars'&&a.value_num)dist[Math.round(a.value_num)-1]++;}));
-    dChart=new Chart(document.getElementById('dc').getContext('2d'),{
-      type:'bar',
-      data:{labels:['1★','2★','3★','4★','5★'],datasets:[{data:dist,backgroundColor:'rgba(250,213,27,.25)',borderColor:'#fad51b',borderWidth:2,borderRadius:4}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666'},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
+// Auto-login on load
+async function init() {
+  try {
+    const r = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email: 'admin@niage.es'})
     });
-
-    if(aChart)aChart.destroy();
-    const byDay={};
-    rs.forEach(r=>{const d=r.created_at?.split('T')[0];if(d)byDay[d]=(byDay[d]||0)+1;});
-    const labels=[],data=[];
-    for(let i=29;i>=0;i--){
-      const d=new Date(Date.now()-i*864e5).toISOString().split('T')[0];
-      labels.push(d.slice(5));data.push(byDay[d]||0);
+    const d = await r.json();
+    if (d.access_token) {
+      TK = d.access_token;
+      OID = String(d.org_id || 1);
+      document.getElementById('user-name').textContent = d.full_name || 'Admin';
+      document.getElementById('org-name').textContent = d.org_name || 'Niage Demo';
+      document.getElementById('api-dot').className = 'api-dot ok';
+      document.getElementById('api-status-text').textContent = 'API OK v1.0.0';
     }
-    aChart=new Chart(document.getElementById('ac').getContext('2d'),{
-      type:'line',
-      data:{labels,datasets:[{data,borderColor:'#fad51b',backgroundColor:'rgba(250,213,27,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#fad51b'}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',maxTicksLimit:8},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
-    });
-  }catch(e){console.error(e);toast('Error cargando datos',true);}
+  } catch(e) {}
+
+  // Load branches for sidebar
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/branches', {headers: H()});
+    const d = await r.json();
+    branches = d.branches || [];
+  } catch(e) {}
+
+  loadOverview();
 }
 
-async function loadSurveys(){
-  try{
-    const [surveys,brResp]=await Promise.all([
-      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H}).then(r=>r.json()),
-      fetch(`${API}/organizations/${OID}/branches`,{headers:H}).then(r=>r.json()),
-    ]);
-    window._branches=brResp.branches||[];
-    const list=document.getElementById('surveys-list');
-    if(!surveys.length){list.innerHTML='<div style="color:var(--tx3)">No hay encuestas</div>';return;}
-    list.innerHTML=surveys.map(s=>`
-      <div style="background:var(--dk3);border:1px solid var(--bd2);border-radius:10px;margin-bottom:12px;overflow:hidden">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px">
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">${s.name}</div>
-            <div style="font-size:10px;color:var(--tx3)">${s.responses_count||0} respuestas &middot; ${s.questions_count||0} preguntas &middot; <span style="font-family:monospace">${s.qr_token.slice(0,14)}...</span></div>
-          </div>
-          <span class="badge ${s.is_active?'bon':'bof'}">${s.is_active?'Activa':'Inactiva'}</span>
-          <button class="btn btn-g" onclick="copyQR('${s.qr_token}')" style="font-size:10px;padding:4px 10px">Copiar QR URL</button>
-        </div>
-        <div style="border-top:1px solid var(--bd2);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div>
-            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Tiendas asignadas</div>
-            <div id="ba-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
-            <button class="btn btn-p" onclick="saveBranches(${s.id})" style="margin-top:10px;font-size:11px">Guardar asignacion</button>
-          </div>
-          <div>
-            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Preguntas activas</div>
-            <div id="qi-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
-            <button class="btn btn-g" onclick="selSurvey(${s.id},String.raw\`${s.name}\`,String.raw\`${s.qr_token}\`);document.getElementById('q-card').style.display='block'" style="margin-top:10px;font-size:11px">Gestionar preguntas</button>
-          </div>
-        </div>
-      </div>`).join('');
-    surveys.forEach(s=>{loadBI(s.id);loadQI(s.id);});
-    if(surveys.length) selSurvey(surveys[0].id,surveys[0].name,surveys[0].qr_token);
-  }catch(e){toast('Error cargando encuestas',true);}
+function H() {
+  return {'Authorization': 'Bearer ' + TK, 'Content-Type': 'application/json'};
 }
 
-async function loadBI(sid){
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
-    const c=document.getElementById('ba-'+sid);if(!c)return;
-    const branches=r.ok?(await r.json()):null;
-    const aids=new Set(branches?.assigned_ids||[]);
-    const avail=branches?.available||window._branches||[];
-    c.innerHTML=avail.map(b=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
-        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
-        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
-      </label>`).join('');
-  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('page-name').textContent = {
+    overview:'Feedback', surveys:'Encuestas & QR', responses:'Respuestas', config:'Configuracion'
+  }[name] || 'Feedback';
+
+  if (name === 'surveys') loadSurveys();
+  if (name === 'responses') loadResponses();
 }
 
-async function loadQI(sid){
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
-    const c=document.getElementById('qi-'+sid);if(!c)return;
-    const qs=(sv.questions||[]).filter(q=>q.is_active);
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    c.innerHTML=qs.length?qs.map((q,i)=>`
-      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
-        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
-      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
-  }catch(e){}
-}
-
-async function saveBranches(sid){
-  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
-  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
-    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
-    else toast('Error al guardar',true);
-  }catch{toast('Error de conexion',true);}
-}
-
-function showCreateSurvey(){
-  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
-  const m=document.createElement('div');m.id='cm';
-  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-  m.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
-      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
-      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
-    </div>
-    <div class="fl" style="margin-bottom:14px">
-      <label>Tiendas asignadas</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-        ${(window._branches||[]).map(b=>`
-          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
-            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
-          </label>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
-      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
-    </div>`;
-  const p=document.getElementById('panel-surveys');
-  const fc=p.querySelector('.card');
-  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
-}
-
-async function doCreateSurvey(){
-  const name=document.getElementById('ns-n')?.value.trim();
-  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
-  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
-  if(!name){toast('Escribe el nombre',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
-    const d=await r.json();
-    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
-    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
-    document.getElementById('cm')?.remove();
-    toast('Encuesta creada con '+brIds.length+' tienda(s)');
-    loadSurveys();
-  }catch{toast('Error de conexion',true);}
-}
-
-async function loadBI(sid){
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
-    const c=document.getElementById('ba-'+sid);if(!c)return;
-    const branches=r.ok?(await r.json()):null;
-    const aids=new Set(branches?.assigned_ids||[]);
-    const avail=branches?.available||window._branches||[];
-    c.innerHTML=avail.map(b=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
-        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
-        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
-      </label>`).join('');
-  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
-}
-
-async function loadQI(sid){
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
-    const c=document.getElementById('qi-'+sid);if(!c)return;
-    const qs=(sv.questions||[]).filter(q=>q.is_active);
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    c.innerHTML=qs.length?qs.map((q,i)=>`
-      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
-        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
-      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
-  }catch(e){}
-}
-
-async function saveBranches(sid){
-  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
-  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
-    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
-    else toast('Error al guardar',true);
-  }catch{toast('Error de conexion',true);}
-}
-
-function showCreateSurvey(){
-  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
-  const m=document.createElement('div');m.id='cm';
-  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-  m.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
-      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
-      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
-    </div>
-    <div class="fl" style="margin-bottom:14px">
-      <label>Tiendas asignadas</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-        ${(window._branches||[]).map(b=>`
-          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
-            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
-          </label>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
-      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
-    </div>`;
-  const p=document.getElementById('panel-surveys');
-  const fc=p.querySelector('.card');
-  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
-}
-
-async function doCreateSurvey(){
-  const name=document.getElementById('ns-n')?.value.trim();
-  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
-  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
-  if(!name){toast('Escribe el nombre',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
-    const d=await r.json();
-    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
-    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
-    document.getElementById('cm')?.remove();
-    toast('Encuesta creada con '+brIds.length+' tienda(s)');
-    loadSurveys();
-  }catch{toast('Error de conexion',true);}
-}
-
-async function selSurvey(id,name,token){
-  curSid=id;
-  document.getElementById('q-card').style.display='block';
-  document.getElementById('survey-name-lbl').textContent=name;
-  document.getElementById('qr-token-lbl').textContent=token;
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${id}`,{headers:H()}).then(r=>r.json());
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    const bc={stars:'bs',nps:'bn',yesno:'by',text:'bt'};
-    const ql=document.getElementById('questions-list');
-    ql.innerHTML=(sv.questions||[]).filter(q=>q.is_active).map((q,i)=>`
-      <div class="qi">
-        <div class="qn">${i+1}</div>
-        <div style="flex:1;font-size:12px;color:var(--tx)">${q.text}</div>
-        <span class="badge ${bc[q.type]}">${tl[q.type]}</span>
-        <button style="width:22px;height:22px;border-radius:4px;border:1px solid var(--bd);background:transparent;color:var(--rd);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center" onclick="delQ(${id},${q.id})">x</button>
-      </div>`).join('')||'<div style="color:var(--tx3);font-size:12px">No hay preguntas. Anade la primera.</div>';
-  }catch(e){toast('Error cargando preguntas',true);}
-}
-
-async function addQ(){
-  const t=document.getElementById('nqt').value.trim();
-  const ty=document.getElementById('nqty').value;
-  if(!t){toast('Escribe el texto de la pregunta',true);return;}
-  if(!curSid){toast('Selecciona una encuesta',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}/questions`,{method:'POST',headers:H(),body:JSON.stringify({text:t,type:ty})});
-    if(!r.ok){toast('Error al anadir pregunta',true);return;}
-    document.getElementById('nqt').value='';
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}`,{headers:H()}).then(r=>r.json());
-    selSurvey(curSid,sv.name,sv.qr_token);
-    toast('Pregunta anadida');
-  }catch{toast('Error de conexion',true);}
-}
-
-async function delQ(sid,qid){
-  try{
-    await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/questions/${qid}`,{method:'DELETE',headers:H()});
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H()}).then(r=>r.json());
-    selSurvey(sid,sv.name,sv.qr_token);toast('Pregunta eliminada');
-  }catch{toast('Error',true);}
-}
-
-async function loadR(){
-  try{
-    const today=new Date().toISOString().split('T')[0];
-    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
-    const data=await fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=50`,{headers:H()}).then(r=>r.json());
-    const tb=document.getElementById('rtb');
-    const rs=data.responses||[];
-    if(!rs.length){tb.innerHTML='<tr><td colspan="5" style="color:var(--tx3);text-align:center;padding:1.5rem">Sin respuestas aun</td></tr>';return;}
-    tb.innerHTML=rs.map((r,i)=>{
-      const pc=(r.satisfaction_score||0)>=70?'phi':(r.satisfaction_score||0)>=40?'pmi':'plo';
-      const ans=(r.answers||[]).map(a=>{
-        if(a.type==='stars')return a.value_num?'★'.repeat(+a.value_num)+'☆'.repeat(5-+a.value_num):'';
-        if(a.type==='nps')return a.value_num!=null?a.value_num+'/10':'';
-        if(a.type==='yesno')return +a.value_num===1?'Si':'No';
-        return a.value_text?a.value_text.slice(0,20):'';
-      }).filter(Boolean).join(' · ');
-      return `<tr>
-        <td style="color:var(--tx3)">${rs.length-i}</td>
-        <td>${new Date(r.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
-        <td>${r.branch_name||'-'}</td>
-        <td style="color:var(--tx2);font-size:11px">${ans}</td>
-        <td><span class="pill ${pc}">${r.satisfaction_score!=null?Math.round(r.satisfaction_score)+'%':'--'}</span></td>
-      </tr>`;
-    }).join('');
-  }catch{toast('Error cargando respuestas',true);}
-}
-
-function copyQR(token){
-  navigator.clipboard.writeText('https://chfeedback-production.up.railway.app/feedback/'+token).then(()=>toast('URL del QR copiada'));
-}
-
-window.addEventListener('load',()=>{
-  checkApi();setInterval(checkApi,15000);
-  if(TK){
-    document.getElementById('panel-overview').classList.remove('active');
-    document.getElementById('panel-overview').classList.add('active');
-    loadOV();
-  }
-});
-</script>
-
-<script>
-(function(){
-  const _orig = window.showCreateSurvey;
-  window.showCreateSurvey = function(){
-    const ex = document.getElementById('cm');
-    if(ex){ex.remove();return;}
-    fetch('https://chfeedback-production.up.railway.app/api/v1/organizations/1/branches',
-      {headers:{'Authorization':'Bearer '+localStorage.getItem('fb_tk')}})
-    .then(r=>r.json()).then(br=>{
-      const branches = br.branches||[];
-      const m = document.createElement('div');
-      m.id='cm';
-      m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-      const brHTML = branches.map(b=>
-        '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--dk3);border:1px solid rgba(250,213,27,.35);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">'
-        +'<input type="checkbox" name="nsb" value="'+b.id+'" checked style="accent-color:var(--p);width:14px;height:14px"> '+b.name
-        +'</label>').join('');
-      m.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
-        +'<div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>'
-        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:20px">&times;</button></div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'
-        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Nombre</label>'
-        +'<input id="ns-n" placeholder="Ej: Valoracion verano 2026" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div>'
-        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Mensaje de gracias</label>'
-        +'<input id="ns-t" value="Gracias por tu opinion" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div></div>'
-        +'<div style="margin-bottom:14px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:8px">Tiendas asignadas</label>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+brHTML+'</div></div>'
-        +'<div style="display:flex;gap:8px">'
-        +'<button onclick="doCreate()" style="background:var(--p);color:var(--dk);border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer">Crear encuesta</button>'
-        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer">Cancelar</button>'
-        +'</div>';
-      const p=document.getElementById('panel-surveys');
-      const fc=p.querySelector('.card');
-      if(fc)p.insertBefore(m,fc);else p.appendChild(m);
-    });
-  };
-  console.log('showCreateSurvey patched');
-})();
-</script>
-</body>
-</htmlasync function loadOverview() {
+async function loadOverview() {
+  // Load surveys count
   try {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {headers: H()});
     const surveys = await r.json();
     document.getElementById('kpi-surveys').textContent = (surveys || []).filter(s => s.is_active).length;
   } catch(e) {}
+
+  // Load analytics
   try {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/analytics', {headers: H()});
     if (!r.ok) return;
     const d = await r.json();
-    const ov = d.overall || {};
-    document.getElementById('kpi-total').textContent = ov.total_responses || 0;
-    document.getElementById('kpi-today').textContent = ov.responses_today || 0;
+
+    document.getElementById('kpi-total').textContent = d.total_responses || 0;
+    document.getElementById('kpi-today').textContent = d.responses_today || 0;
     document.getElementById('overview-date').textContent = 'Satisfaccion de clientes · ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
-    if (ov.satisfaction_score != null && ov.satisfaction_score > 0) {
-      document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
+
+    if (d.satisfaction_score != null) {
+      document.getElementById('kpi-score').textContent = d.satisfaction_score + '%';
       document.getElementById('kpi-score-sub').textContent = '';
     }
+
+    // By question
     if (d.by_question && d.by_question.length) {
       document.getElementById('by-question-content').innerHTML = d.by_question.map(q =>
-        '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tx)">' + q.question_text.slice(0,40) + '</span><span style="color:var(--p);font-weight:600">' + (q.satisfaction_pct||0) + '%</span></div><div style="background:var(--bg4);border-radius:4px;height:4px"><div style="background:var(--p);height:4px;border-radius:4px;width:' + (q.satisfaction_pct||0) + '%"></div></div></div>'
+        '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tx)">' + q.question_text.slice(0,40) + '</span><span style="color:var(--p);font-weight:600">' + (q.satisfaction_pct || 0) + '%</span></div><div style="background:var(--bg4);border-radius:4px;height:4px"><div style="background:var(--p);height:4px;border-radius:4px;width:' + (q.satisfaction_pct || 0) + '%"></div></div></div>'
       ).join('');
     }
-    const stars = d.score_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
-    if (window.starsChart) window.starsChart.destroy();
-    window.starsChart = new Chart(document.getElementById('stars-chart'), {
+
+    // Stars chart
+    const stars = d.stars_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
+    if (starsChart) starsChart.destroy();
+    starsChart = new Chart(document.getElementById('stars-chart'), {
       type: 'bar',
-      data: {labels: ['1★','2★','3★','4★','5★'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
-      options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
+      data: {
+        labels: ['1★','2★','3★','4★','5★'],
+        datasets: [{data: [stars['1']||0, stars['2']||0, stars['3']||0, stars['4']||0, stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]
+      },
+      options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
     });
+
+    // Time series
     if (d.time_series && d.time_series.length) {
-      if (window.timeChart) window.timeChart.destroy();
-      window.timeChart = new Chart(document.getElementById('time-chart'), {
+      if (timeChart) timeChart.destroy();
+      timeChart = new Chart(document.getElementById('time-chart'), {
         type: 'line',
-        data: {labels: d.time_series.map(p => p.date), datasets: [{data: d.time_series.map(p => p.responses), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]},
-        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8',maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'},min:0}}}
+        data: {
+          labels: d.time_series.map(p => p.period),
+          datasets: [{data: d.time_series.map(p => p.count), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]
+        },
+        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8', maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}}, y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
       });
     }
-  } catch(e) { console.error('analytics error:', e); }
+  } catch(e) {}
 }
 
-async function checkApi(){
-  try{
-    const r=await fetch('https://chfeedback-production.up.railway.app/health');
-    const d=await r.json();
-    document.getElementById('api-dot').classList.add('ok');
-    document.getElementById('api-txt').textContent='API OK v'+d.version;
-  }catch{
-    document.getElementById('api-dot').classList.remove('ok');
-    document.getElementById('api-txt').textContent='API no disponible';
-  }
-}
+async function loadSurveys() {
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {headers: H()});
+    const surveys = await r.json();
+    const el = document.getElementById('surveys-list');
+    if (!surveys.length) { el.innerHTML = '<div class="empty-state">No hay encuestas aun</div>'; return; }
 
-function nav(el,panel){
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  el.classList.add('active');
-  ['setup','overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
-  document.getElementById('panel-'+panel).classList.add('active');
-  if(panel==='overview')loadOV();
-  if(panel==='surveys')loadSurveys();
-  if(panel==='responses')loadR();
-  if(panel==='config'){document.getElementById('td').value=TK;document.getElementById('od').value=OID;}
-}
-
-function extNav(n){window.open('https://democba.niage.es/'+n.toLowerCase().replace(' ','-'),'_blank');}
-
-async function connect(){
-  TK=document.getElementById('ti').value.trim();
-  OID=document.getElementById('oi').value.trim()||'1';
-  if(!TK){toast('Introduce el JWT token',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()});
-    if(r.status===401){toast('Token invalido o expirado',true);return;}
-    localStorage.setItem('fb_tk',TK);localStorage.setItem('fb_oid',OID);
-    ['setup'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
-    document.getElementById('panel-overview').classList.add('active');
-    loadOV();toast('Conectado');
-  }catch{toast('No se puede conectar. Asegurate que uvicorn corre en puerto 8001',true);}
-}
-
-function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-overview').classList.add('active');}
-
-async function loadOV(){
-  try{
-    const today=new Date().toISOString().split('T')[0];
-    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
-    const [surveys,resps]=await Promise.all([
-      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()}).then(r=>r.json()),
-      fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=200`,{headers:H()}).then(r=>r.json()),
-    ]);
-    document.getElementById('ov-sub').textContent=`Satisfaccion de clientes · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}`;
-    document.getElementById('m-enc').textContent=Array.isArray(surveys)?surveys.filter(s=>s.is_active).length:'--';
-    const rs=resps.responses||[];
-    const todayStr=today;
-    document.getElementById('m-hoy').textContent=rs.filter(r=>r.created_at?.startsWith(todayStr)).length;
-    document.getElementById('m-tot').textContent=rs.length;
-    if(rs.length){
-      const avg=rs.reduce((a,r)=>a+(r.satisfaction_score||0),0)/rs.length;
-      document.getElementById('m-score').textContent=Math.round(avg)+'%';
-      document.getElementById('m-t').textContent='Basado en '+rs.length+' respuestas';
-    }else{document.getElementById('m-score').textContent='--';document.getElementById('m-t').textContent='Sin datos aun';}
-
-    const qMap={};
-    rs.forEach(r=>(r.answers||[]).forEach(a=>{
-      if(!qMap[a.question_id])qMap[a.question_id]={text:a.question_text,type:a.type,vals:[]};
-      if(a.value_num!=null)qMap[a.question_id].vals.push(+a.value_num);
-    }));
-    const bars=document.getElementById('q-bars');
-    const qs=Object.values(qMap).slice(0,5);
-    if(qs.length){
-      bars.innerHTML=qs.map(q=>{
-        let pct=0;
-        if(q.type==='stars')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/5*100):0;
-        else if(q.type==='nps')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/10*100):0;
-        else if(q.type==='yesno')pct=q.vals.length?Math.round(q.vals.filter(v=>v===1).length/q.vals.length*100):0;
-        const cls=pct>=70?'fg':pct>=40?'fp':'fr';
-        return `<div class="br"><div class="bm"><span>${q.text.slice(0,42)}${q.text.length>42?'...':''}</span><strong>${pct}%</strong></div><div class="bt2"><div class="bf ${cls}" style="width:${pct}%"></div></div></div>`;
-      }).join('');
-    }else{bars.innerHTML='<div style="color:var(--tx3);font-size:12px">Sin respuestas aun</div>';}
-
-    if(dChart)dChart.destroy();
-    const dist=[0,0,0,0,0];
-    rs.forEach(r=>(r.answers||[]).forEach(a=>{if(a.type==='stars'&&a.value_num)dist[Math.round(a.value_num)-1]++;}));
-    dChart=new Chart(document.getElementById('dc').getContext('2d'),{
-      type:'bar',
-      data:{labels:['1★','2★','3★','4★','5★'],datasets:[{data:dist,backgroundColor:'rgba(250,213,27,.25)',borderColor:'#fad51b',borderWidth:2,borderRadius:4}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666'},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
-    });
-
-    if(aChart)aChart.destroy();
-    const byDay={};
-    rs.forEach(r=>{const d=r.created_at?.split('T')[0];if(d)byDay[d]=(byDay[d]||0)+1;});
-    const labels=[],data=[];
-    for(let i=29;i>=0;i--){
-      const d=new Date(Date.now()-i*864e5).toISOString().split('T')[0];
-      labels.push(d.slice(5));data.push(byDay[d]||0);
-    }
-    aChart=new Chart(document.getElementById('ac').getContext('2d'),{
-      type:'line',
-      data:{labels,datasets:[{data,borderColor:'#fad51b',backgroundColor:'rgba(250,213,27,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#fad51b'}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',maxTicksLimit:8},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
-    });
-  }catch(e){console.error(e);toast('Error cargando datos',true);}
-}
-
-async function loadSurveys(){
-  try{
-    const [surveys,brResp]=await Promise.all([
-      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H}).then(r=>r.json()),
-      fetch(`${API}/organizations/${OID}/branches`,{headers:H}).then(r=>r.json()),
-    ]);
-    window._branches=brResp.branches||[];
-    const list=document.getElementById('surveys-list');
-    if(!surveys.length){list.innerHTML='<div style="color:var(--tx3)">No hay encuestas</div>';return;}
-    list.innerHTML=surveys.map(s=>`
-      <div style="background:var(--dk3);border:1px solid var(--bd2);border-radius:10px;margin-bottom:12px;overflow:hidden">
-        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px">
+    el.innerHTML = surveys.map(s => `
+      <div class="survey-card">
+        <div class="survey-header">
           <div style="flex:1">
-            <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">${s.name}</div>
-            <div style="font-size:10px;color:var(--tx3)">${s.responses_count||0} respuestas &middot; ${s.questions_count||0} preguntas &middot; <span style="font-family:monospace">${s.qr_token.slice(0,14)}...</span></div>
+            <div class="survey-name">${s.name}</div>
+            <div class="survey-meta">${s.responses_count||0} respuestas · ${s.questions_count||0} preguntas · <span class="qr-token">${s.qr_token.slice(0,20)}...</span></div>
           </div>
-          <span class="badge ${s.is_active?'bon':'bof'}">${s.is_active?'Activa':'Inactiva'}</span>
-          <button class="btn btn-g" onclick="copyQR('${s.qr_token}')" style="font-size:10px;padding:4px 10px">Copiar QR URL</button>
+          <span class="badge ${s.is_active ? 'badge-gn' : 'badge-rd'}">${s.is_active ? 'Activa' : 'Inactiva'}</span>
+          <button class="copy-btn" onclick="copyQR('${s.qr_token}')">Copiar QR URL</button>
         </div>
-        <div style="border-top:1px solid var(--bd2);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="survey-body">
           <div>
-            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Tiendas asignadas</div>
-            <div id="ba-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
-            <button class="btn btn-p" onclick="saveBranches(${s.id})" style="margin-top:10px;font-size:11px">Guardar asignacion</button>
+            <div class="section-label">Tiendas asignadas</div>
+            <div id="br-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
+            <button class="btn btn-p" style="margin-top:10px;font-size:11px;padding:5px 12px" onclick="saveBranches(${s.id})">Guardar asignacion</button>
           </div>
           <div>
-            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Preguntas activas</div>
+            <div class="section-label">Preguntas activas</div>
             <div id="qi-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
-            <button class="btn btn-g" onclick="selSurvey(${s.id},String.raw\`${s.name}\`,String.raw\`${s.qr_token}\`);document.getElementById('q-card').style.display='block'" style="margin-top:10px;font-size:11px">Gestionar preguntas</button>
           </div>
         </div>
       </div>`).join('');
-    surveys.forEach(s=>{loadBI(s.id);loadQI(s.id);});
-    if(surveys.length) selSurvey(surveys[0].id,surveys[0].name,surveys[0].qr_token);
-  }catch(e){toast('Error cargando encuestas',true);}
+
+    surveys.forEach(s => { loadBranches(s.id); loadQuestions(s.id); });
+  } catch(e) { document.getElementById('surveys-list').innerHTML = '<div class="empty-state">Error cargando encuestas</div>'; }
 }
 
-async function loadBI(sid){
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
-    const c=document.getElementById('ba-'+sid);if(!c)return;
-    const branches=r.ok?(await r.json()):null;
-    const aids=new Set(branches?.assigned_ids||[]);
-    const avail=branches?.available||window._branches||[];
-    c.innerHTML=avail.map(b=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
-        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
-        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
+async function loadBranches(sid) {
+  const el = document.getElementById('br-' + sid);
+  if (!el) return;
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + sid + '/branches', {headers: H()});
+    const d = await r.json();
+    const aids = new Set(d.assigned_ids || []);
+    const avail = d.available || branches;
+    el.innerHTML = avail.map(b => `
+      <label class="branch-item" style="border-color:${aids.has(b.id)?'rgba(250,213,27,.3)':'var(--bd2)'}">
+        <input type="checkbox" class="branch-cb" id="cb-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.3)':'var(--bd2)'">
+        <span class="branch-name">${b.name}</span>
+        ${aids.has(b.id)?'<span style="font-size:10px;color:var(--p);font-weight:700">✓</span>':''}
       </label>`).join('');
-  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
+  } catch(e) { if(el) el.innerHTML = '<div style="color:var(--tx3);font-size:12px">Error</div>'; }
 }
 
-async function loadQI(sid){
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
-    const c=document.getElementById('qi-'+sid);if(!c)return;
-    const qs=(sv.questions||[]).filter(q=>q.is_active);
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    c.innerHTML=qs.length?qs.map((q,i)=>`
-      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
-        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
-      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
-  }catch(e){}
+async function loadQuestions(sid) {
+  const el = document.getElementById('qi-' + sid);
+  if (!el) return;
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + sid, {headers: H()});
+    const d = await r.json();
+    const qs = (d.questions || []).filter(q => q.is_active);
+    const types = {stars:'★ Estrellas', nps:'NPS', yesno:'Si/No', text:'Texto'};
+    el.innerHTML = qs.length ? qs.map((q,i) => `
+      <div class="q-item">
+        <div class="q-num">${i+1}</div>
+        <div class="q-text">${q.text.slice(0,40)}${q.text.length>40?'...':''}</div>
+        <div class="q-type">${types[q.type]||q.type}</div>
+      </div>`).join('') : '<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
+  } catch(e) {}
 }
 
-async function saveBranches(sid){
-  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
-  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
-    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
-    else toast('Error al guardar',true);
-  }catch{toast('Error de conexion',true);}
+async function saveBranches(sid) {
+  const checked = [...document.querySelectorAll(`[id^="cb-${sid}-"]:checked`)].map(i => +i.value);
+  if (!checked.length) { showToast('Selecciona al menos una tienda'); return; }
+  const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + sid + '/branches', {
+    method: 'PUT', headers: H(), body: JSON.stringify({branch_ids: checked})
+  });
+  if (r.ok) { showToast(checked.length + ' tienda(s) asignadas'); loadBranches(sid); }
 }
 
-function showCreateSurvey(){
-  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
-  const m=document.createElement('div');m.id='cm';
-  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-  m.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
-      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
-      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
-    </div>
-    <div class="fl" style="margin-bottom:14px">
-      <label>Tiendas asignadas</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-        ${(window._branches||[]).map(b=>`
-          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
-            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
-          </label>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
-      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
-    </div>`;
-  const p=document.getElementById('panel-surveys');
-  const fc=p.querySelector('.card');
-  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
+function copyQR(token) {
+  const url = BASE + '/public/feedback/' + token;
+  navigator.clipboard.writeText(url).then(() => showToast('URL QR copiada'));
 }
 
-async function doCreateSurvey(){
-  const name=document.getElementById('ns-n')?.value.trim();
-  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
-  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
-  if(!name){toast('Escribe el nombre',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
-    const d=await r.json();
-    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
-    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
-    document.getElementById('cm')?.remove();
-    toast('Encuesta creada con '+brIds.length+' tienda(s)');
-    loadSurveys();
-  }catch{toast('Error de conexion',true);}
-}
-
-async function loadBI(sid){
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
-    const c=document.getElementById('ba-'+sid);if(!c)return;
-    const branches=r.ok?(await r.json()):null;
-    const aids=new Set(branches?.assigned_ids||[]);
-    const avail=branches?.available||window._branches||[];
-    c.innerHTML=avail.map(b=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
-        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
-        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
-      </label>`).join('');
-  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
-}
-
-async function loadQI(sid){
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
-    const c=document.getElementById('qi-'+sid);if(!c)return;
-    const qs=(sv.questions||[]).filter(q=>q.is_active);
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    c.innerHTML=qs.length?qs.map((q,i)=>`
-      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
-        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
-      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
-  }catch(e){}
-}
-
-async function saveBranches(sid){
-  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
-  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
-    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
-    else toast('Error al guardar',true);
-  }catch{toast('Error de conexion',true);}
-}
-
-function showCreateSurvey(){
-  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
-  const m=document.createElement('div');m.id='cm';
-  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-  m.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
-      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
-      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
-    </div>
-    <div class="fl" style="margin-bottom:14px">
-      <label>Tiendas asignadas</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-        ${(window._branches||[]).map(b=>`
-          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
-            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
-          </label>`).join('')}
-      </div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
-      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
-    </div>`;
-  const p=document.getElementById('panel-surveys');
-  const fc=p.querySelector('.card');
-  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
-}
-
-async function doCreateSurvey(){
-  const name=document.getElementById('ns-n')?.value.trim();
-  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
-  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
-  if(!name){toast('Escribe el nombre',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
-    const d=await r.json();
-    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
-    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
-    document.getElementById('cm')?.remove();
-    toast('Encuesta creada con '+brIds.length+' tienda(s)');
-    loadSurveys();
-  }catch{toast('Error de conexion',true);}
-}
-
-async function selSurvey(id,name,token){
-  curSid=id;
-  document.getElementById('q-card').style.display='block';
-  document.getElementById('survey-name-lbl').textContent=name;
-  document.getElementById('qr-token-lbl').textContent=token;
-  try{
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${id}`,{headers:H()}).then(r=>r.json());
-    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
-    const bc={stars:'bs',nps:'bn',yesno:'by',text:'bt'};
-    const ql=document.getElementById('questions-list');
-    ql.innerHTML=(sv.questions||[]).filter(q=>q.is_active).map((q,i)=>`
-      <div class="qi">
-        <div class="qn">${i+1}</div>
-        <div style="flex:1;font-size:12px;color:var(--tx)">${q.text}</div>
-        <span class="badge ${bc[q.type]}">${tl[q.type]}</span>
-        <button style="width:22px;height:22px;border-radius:4px;border:1px solid var(--bd);background:transparent;color:var(--rd);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center" onclick="delQ(${id},${q.id})">x</button>
-      </div>`).join('')||'<div style="color:var(--tx3);font-size:12px">No hay preguntas. Anade la primera.</div>';
-  }catch(e){toast('Error cargando preguntas',true);}
-}
-
-async function addQ(){
-  const t=document.getElementById('nqt').value.trim();
-  const ty=document.getElementById('nqty').value;
-  if(!t){toast('Escribe el texto de la pregunta',true);return;}
-  if(!curSid){toast('Selecciona una encuesta',true);return;}
-  try{
-    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}/questions`,{method:'POST',headers:H(),body:JSON.stringify({text:t,type:ty})});
-    if(!r.ok){toast('Error al anadir pregunta',true);return;}
-    document.getElementById('nqt').value='';
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}`,{headers:H()}).then(r=>r.json());
-    selSurvey(curSid,sv.name,sv.qr_token);
-    toast('Pregunta anadida');
-  }catch{toast('Error de conexion',true);}
-}
-
-async function delQ(sid,qid){
-  try{
-    await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/questions/${qid}`,{method:'DELETE',headers:H()});
-    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H()}).then(r=>r.json());
-    selSurvey(sid,sv.name,sv.qr_token);toast('Pregunta eliminada');
-  }catch{toast('Error',true);}
-}
-
-async function loadR(){
-  try{
-    const today=new Date().toISOString().split('T')[0];
-    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
-    const data=await fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=50`,{headers:H()}).then(r=>r.json());
-    const tb=document.getElementById('rtb');
-    const rs=data.responses||[];
-    if(!rs.length){tb.innerHTML='<tr><td colspan="5" style="color:var(--tx3);text-align:center;padding:1.5rem">Sin respuestas aun</td></tr>';return;}
-    tb.innerHTML=rs.map((r,i)=>{
-      const pc=(r.satisfaction_score||0)>=70?'phi':(r.satisfaction_score||0)>=40?'pmi':'plo';
-      const ans=(r.answers||[]).map(a=>{
-        if(a.type==='stars')return a.value_num?'★'.repeat(+a.value_num)+'☆'.repeat(5-+a.value_num):'';
-        if(a.type==='nps')return a.value_num!=null?a.value_num+'/10':'';
-        if(a.type==='yesno')return +a.value_num===1?'Si':'No';
-        return a.value_text?a.value_text.slice(0,20):'';
-      }).filter(Boolean).join(' · ');
+async function loadResponses() {
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/responses?limit=50', {headers: H()});
+    const d = await r.json();
+    const responses = d.responses || d || [];
+    const tbody = document.getElementById('responses-body');
+    if (!responses.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--tx3)">Sin respuestas aun</td></tr>'; return; }
+    tbody.innerHTML = responses.map(resp => {
+      const score = resp.satisfaction_score;
+      const color = score >= 70 ? 'var(--gn)' : score >= 40 ? 'var(--p)' : 'var(--rd)';
       return `<tr>
-        <td style="color:var(--tx3)">${rs.length-i}</td>
-        <td>${new Date(r.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
-        <td>${r.branch_name||'-'}</td>
-        <td style="color:var(--tx2);font-size:11px">${ans}</td>
-        <td><span class="pill ${pc}">${r.satisfaction_score!=null?Math.round(r.satisfaction_score)+'%':'--'}</span></td>
+        <td>${new Date(resp.created_at).toLocaleDateString('es-ES')}</td>
+        <td>${resp.survey_name || '-'}</td>
+        <td>${resp.branch_name || '-'}</td>
+        <td>${score != null ? '<span class="score-pill" style="background:rgba(0,0,0,.3);color:'+color+'">'+score+'%</span>' : '-'}</td>
+        <td style="text-transform:capitalize">${resp.device_type || '-'}</td>
       </tr>`;
     }).join('');
-  }catch{toast('Error cargando respuestas',true);}
+  } catch(e) {}
 }
 
-function copyQR(token){
-  navigator.clipboard.writeText('https://chfeedback-production.up.railway.app/feedback/'+token).then(()=>toast('URL del QR copiada'));
+function openNewSurvey() {
+  const grid = document.getElementById('ns-branches');
+  grid.innerHTML = branches.map(b => `
+    <label class="branch-cb-label">
+      <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)">
+      ${b.name}
+    </label>`).join('');
+  document.getElementById('form-overlay').classList.add('open');
 }
 
-window.addEventListener('load',()=>{
-  checkApi();setInterval(checkApi,15000);
-  if(TK){
-    document.getElementById('panel-overview').classList.remove('active');
-    document.getElementById('panel-overview').classList.add('active');
-    loadOV();
-  }
-});
-</script>
+function closeNewSurvey() {
+  document.getElementById('form-overlay').classList.remove('open');
+  document.getElementById('ns-name').value = '';
+}
 
-<script>
-(function(){
-  const _orig = window.showCreateSurvey;
-  window.showCreateSurvey = function(){
-    const ex = document.getElementById('cm');
-    if(ex){ex.remove();return;}
-    fetch('https://chfeedback-production.up.railway.app/api/v1/organizations/1/branches',
-      {headers:{'Authorization':'Bearer '+localStorage.getItem('fb_tk')}})
-    .then(r=>r.json()).then(br=>{
-      const branches = br.branches||[];
-      const m = document.createElement('div');
-      m.id='cm';
-      m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
-      const brHTML = branches.map(b=>
-        '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--dk3);border:1px solid rgba(250,213,27,.35);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">'
-        +'<input type="checkbox" name="nsb" value="'+b.id+'" checked style="accent-color:var(--p);width:14px;height:14px"> '+b.name
-        +'</label>').join('');
-      m.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
-        +'<div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>'
-        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:20px">&times;</button></div>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'
-        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Nombre</label>'
-        +'<input id="ns-n" placeholder="Ej: Valoracion verano 2026" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div>'
-        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Mensaje de gracias</label>'
-        +'<input id="ns-t" value="Gracias por tu opinion" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div></div>'
-        +'<div style="margin-bottom:14px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:8px">Tiendas asignadas</label>'
-        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+brHTML+'</div></div>'
-        +'<div style="display:flex;gap:8px">'
-        +'<button onclick="doCreate()" style="background:var(--p);color:var(--dk);border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer">Crear encuesta</button>'
-        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer">Cancelar</button>'
-        +'</div>';
-      const p=document.getElementById('panel-surveys');
-      const fc=p.querySelector('.card');
-      if(fc)p.insertBefore(m,fc);else p.appendChild(m);
+async function createSurvey() {
+  const name = document.getElementById('ns-name').value.trim();
+  const thanks = document.getElementById('ns-thanks').value.trim() || 'Gracias';
+  const brIds = [...document.querySelectorAll('[name="nsb"]:checked')].map(i => +i.value);
+  if (!name) { showToast('Escribe el nombre'); return; }
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {
+      method: 'POST', headers: H(), body: JSON.stringify({name, thank_you_msg: thanks})
     });
-  };
-  console.log('showCreateSurvey patched');
-})();
+    const d = await r.json();
+    if (!r.ok) { showToast(d.detail || 'Error'); return; }
+    if (brIds.length && d.id) {
+      await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + d.id + '/branches', {
+        method: 'PUT', headers: H(), body: JSON.stringify({branch_ids: brIds})
+      });
+    }
+    closeNewSurvey();
+    showToast('Encuesta creada con ' + brIds.length + ' tienda(s)');
+    loadSurveys();
+  } catch(e) { showToast('Error creando encuesta'); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init on load
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
