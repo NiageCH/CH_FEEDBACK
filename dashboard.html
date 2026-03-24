@@ -661,4 +661,486 @@ window.addEventListener('load',()=>{
 })();
 </script>
 </body>
+</htmlasync function loadOverview() {
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys', {headers: H()});
+    const surveys = await r.json();
+    document.getElementById('kpi-surveys').textContent = (surveys || []).filter(s => s.is_active).length;
+  } catch(e) {}
+  try {
+    const r = await fetch(API + '/organizations/' + OID + '/feedback/analytics', {headers: H()});
+    if (!r.ok) return;
+    const d = await r.json();
+    const ov = d.overall || {};
+    document.getElementById('kpi-total').textContent = ov.total_responses || 0;
+    document.getElementById('kpi-today').textContent = ov.responses_today || 0;
+    document.getElementById('overview-date').textContent = 'Satisfaccion de clientes · ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    if (ov.satisfaction_score != null && ov.satisfaction_score > 0) {
+      document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
+      document.getElementById('kpi-score-sub').textContent = '';
+    }
+    if (d.by_question && d.by_question.length) {
+      document.getElementById('by-question-content').innerHTML = d.by_question.map(q =>
+        '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--tx)">' + q.question_text.slice(0,40) + '</span><span style="color:var(--p);font-weight:600">' + (q.satisfaction_pct||0) + '%</span></div><div style="background:var(--bg4);border-radius:4px;height:4px"><div style="background:var(--p);height:4px;border-radius:4px;width:' + (q.satisfaction_pct||0) + '%"></div></div></div>'
+      ).join('');
+    }
+    const stars = d.score_distribution || {'1':0,'2':0,'3':0,'4':0,'5':0};
+    if (window.starsChart) window.starsChart.destroy();
+    window.starsChart = new Chart(document.getElementById('stars-chart'), {
+      type: 'bar',
+      data: {labels: ['1★','2★','3★','4★','5★'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
+      options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
+    });
+    if (d.time_series && d.time_series.length) {
+      if (window.timeChart) window.timeChart.destroy();
+      window.timeChart = new Chart(document.getElementById('time-chart'), {
+        type: 'line',
+        data: {labels: d.time_series.map(p => p.date), datasets: [{data: d.time_series.map(p => p.responses), borderColor:'#fad51b', backgroundColor:'rgba(250,213,27,.08)', borderWidth:2, pointRadius:3, fill:true, tension:.4}]},
+        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8',maxTicksLimit:10},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'},min:0}}}
+      });
+    }
+  } catch(e) { console.error('analytics error:', e); }
+}
+
+async function checkApi(){
+  try{
+    const r=await fetch('https://chfeedback-production.up.railway.app/health');
+    const d=await r.json();
+    document.getElementById('api-dot').classList.add('ok');
+    document.getElementById('api-txt').textContent='API OK v'+d.version;
+  }catch{
+    document.getElementById('api-dot').classList.remove('ok');
+    document.getElementById('api-txt').textContent='API no disponible';
+  }
+}
+
+function nav(el,panel){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  ['setup','overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
+  document.getElementById('panel-'+panel).classList.add('active');
+  if(panel==='overview')loadOV();
+  if(panel==='surveys')loadSurveys();
+  if(panel==='responses')loadR();
+  if(panel==='config'){document.getElementById('td').value=TK;document.getElementById('od').value=OID;}
+}
+
+function extNav(n){window.open('https://democba.niage.es/'+n.toLowerCase().replace(' ','-'),'_blank');}
+
+async function connect(){
+  TK=document.getElementById('ti').value.trim();
+  OID=document.getElementById('oi').value.trim()||'1';
+  if(!TK){toast('Introduce el JWT token',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()});
+    if(r.status===401){toast('Token invalido o expirado',true);return;}
+    localStorage.setItem('fb_tk',TK);localStorage.setItem('fb_oid',OID);
+    ['setup'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));
+    document.getElementById('panel-overview').classList.add('active');
+    loadOV();toast('Conectado');
+  }catch{toast('No se puede conectar. Asegurate que uvicorn corre en puerto 8001',true);}
+}
+
+function disco(){localStorage.removeItem('fb_tk');TK='';['overview','surveys','responses','config'].forEach(p=>document.getElementById('panel-'+p).classList.remove('active'));document.getElementById('panel-overview').classList.add('active');}
+
+async function loadOV(){
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
+    const [surveys,resps]=await Promise.all([
+      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H()}).then(r=>r.json()),
+      fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=200`,{headers:H()}).then(r=>r.json()),
+    ]);
+    document.getElementById('ov-sub').textContent=`Satisfaccion de clientes · ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}`;
+    document.getElementById('m-enc').textContent=Array.isArray(surveys)?surveys.filter(s=>s.is_active).length:'--';
+    const rs=resps.responses||[];
+    const todayStr=today;
+    document.getElementById('m-hoy').textContent=rs.filter(r=>r.created_at?.startsWith(todayStr)).length;
+    document.getElementById('m-tot').textContent=rs.length;
+    if(rs.length){
+      const avg=rs.reduce((a,r)=>a+(r.satisfaction_score||0),0)/rs.length;
+      document.getElementById('m-score').textContent=Math.round(avg)+'%';
+      document.getElementById('m-t').textContent='Basado en '+rs.length+' respuestas';
+    }else{document.getElementById('m-score').textContent='--';document.getElementById('m-t').textContent='Sin datos aun';}
+
+    const qMap={};
+    rs.forEach(r=>(r.answers||[]).forEach(a=>{
+      if(!qMap[a.question_id])qMap[a.question_id]={text:a.question_text,type:a.type,vals:[]};
+      if(a.value_num!=null)qMap[a.question_id].vals.push(+a.value_num);
+    }));
+    const bars=document.getElementById('q-bars');
+    const qs=Object.values(qMap).slice(0,5);
+    if(qs.length){
+      bars.innerHTML=qs.map(q=>{
+        let pct=0;
+        if(q.type==='stars')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/5*100):0;
+        else if(q.type==='nps')pct=q.vals.length?Math.round(q.vals.reduce((a,b)=>a+b,0)/q.vals.length/10*100):0;
+        else if(q.type==='yesno')pct=q.vals.length?Math.round(q.vals.filter(v=>v===1).length/q.vals.length*100):0;
+        const cls=pct>=70?'fg':pct>=40?'fp':'fr';
+        return `<div class="br"><div class="bm"><span>${q.text.slice(0,42)}${q.text.length>42?'...':''}</span><strong>${pct}%</strong></div><div class="bt2"><div class="bf ${cls}" style="width:${pct}%"></div></div></div>`;
+      }).join('');
+    }else{bars.innerHTML='<div style="color:var(--tx3);font-size:12px">Sin respuestas aun</div>';}
+
+    if(dChart)dChart.destroy();
+    const dist=[0,0,0,0,0];
+    rs.forEach(r=>(r.answers||[]).forEach(a=>{if(a.type==='stars'&&a.value_num)dist[Math.round(a.value_num)-1]++;}));
+    dChart=new Chart(document.getElementById('dc').getContext('2d'),{
+      type:'bar',
+      data:{labels:['1★','2★','3★','4★','5★'],datasets:[{data:dist,backgroundColor:'rgba(250,213,27,.25)',borderColor:'#fad51b',borderWidth:2,borderRadius:4}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666'},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
+    });
+
+    if(aChart)aChart.destroy();
+    const byDay={};
+    rs.forEach(r=>{const d=r.created_at?.split('T')[0];if(d)byDay[d]=(byDay[d]||0)+1;});
+    const labels=[],data=[];
+    for(let i=29;i>=0;i--){
+      const d=new Date(Date.now()-i*864e5).toISOString().split('T')[0];
+      labels.push(d.slice(5));data.push(byDay[d]||0);
+    }
+    aChart=new Chart(document.getElementById('ac').getContext('2d'),{
+      type:'line',
+      data:{labels,datasets:[{data,borderColor:'#fad51b',backgroundColor:'rgba(250,213,27,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#fad51b'}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',maxTicksLimit:8},grid:{display:false}},y:{ticks:{color:'#666',precision:0},grid:{color:'rgba(255,255,255,.05)'}}}}
+    });
+  }catch(e){console.error(e);toast('Error cargando datos',true);}
+}
+
+async function loadSurveys(){
+  try{
+    const [surveys,brResp]=await Promise.all([
+      fetch(`${API}/organizations/${OID}/feedback/surveys`,{headers:H}).then(r=>r.json()),
+      fetch(`${API}/organizations/${OID}/branches`,{headers:H}).then(r=>r.json()),
+    ]);
+    window._branches=brResp.branches||[];
+    const list=document.getElementById('surveys-list');
+    if(!surveys.length){list.innerHTML='<div style="color:var(--tx3)">No hay encuestas</div>';return;}
+    list.innerHTML=surveys.map(s=>`
+      <div style="background:var(--dk3);border:1px solid var(--bd2);border-radius:10px;margin-bottom:12px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">${s.name}</div>
+            <div style="font-size:10px;color:var(--tx3)">${s.responses_count||0} respuestas &middot; ${s.questions_count||0} preguntas &middot; <span style="font-family:monospace">${s.qr_token.slice(0,14)}...</span></div>
+          </div>
+          <span class="badge ${s.is_active?'bon':'bof'}">${s.is_active?'Activa':'Inactiva'}</span>
+          <button class="btn btn-g" onclick="copyQR('${s.qr_token}')" style="font-size:10px;padding:4px 10px">Copiar QR URL</button>
+        </div>
+        <div style="border-top:1px solid var(--bd2);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Tiendas asignadas</div>
+            <div id="ba-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
+            <button class="btn btn-p" onclick="saveBranches(${s.id})" style="margin-top:10px;font-size:11px">Guardar asignacion</button>
+          </div>
+          <div>
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px">Preguntas activas</div>
+            <div id="qi-${s.id}"><div style="color:var(--tx3);font-size:12px">Cargando...</div></div>
+            <button class="btn btn-g" onclick="selSurvey(${s.id},String.raw\`${s.name}\`,String.raw\`${s.qr_token}\`);document.getElementById('q-card').style.display='block'" style="margin-top:10px;font-size:11px">Gestionar preguntas</button>
+          </div>
+        </div>
+      </div>`).join('');
+    surveys.forEach(s=>{loadBI(s.id);loadQI(s.id);});
+    if(surveys.length) selSurvey(surveys[0].id,surveys[0].name,surveys[0].qr_token);
+  }catch(e){toast('Error cargando encuestas',true);}
+}
+
+async function loadBI(sid){
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
+    const c=document.getElementById('ba-'+sid);if(!c)return;
+    const branches=r.ok?(await r.json()):null;
+    const aids=new Set(branches?.assigned_ids||[]);
+    const avail=branches?.available||window._branches||[];
+    c.innerHTML=avail.map(b=>`
+      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
+        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
+        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
+        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
+      </label>`).join('');
+  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
+}
+
+async function loadQI(sid){
+  try{
+    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
+    const c=document.getElementById('qi-'+sid);if(!c)return;
+    const qs=(sv.questions||[]).filter(q=>q.is_active);
+    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
+    c.innerHTML=qs.length?qs.map((q,i)=>`
+      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
+        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
+      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
+  }catch(e){}
+}
+
+async function saveBranches(sid){
+  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
+  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
+    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
+    else toast('Error al guardar',true);
+  }catch{toast('Error de conexion',true);}
+}
+
+function showCreateSurvey(){
+  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
+  const m=document.createElement('div');m.id='cm';
+  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
+  m.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
+      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
+      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
+    </div>
+    <div class="fl" style="margin-bottom:14px">
+      <label>Tiendas asignadas</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+        ${(window._branches||[]).map(b=>`
+          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
+            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
+          </label>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
+      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
+    </div>`;
+  const p=document.getElementById('panel-surveys');
+  const fc=p.querySelector('.card');
+  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
+}
+
+async function doCreateSurvey(){
+  const name=document.getElementById('ns-n')?.value.trim();
+  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
+  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
+  if(!name){toast('Escribe el nombre',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
+    const d=await r.json();
+    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
+    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
+    document.getElementById('cm')?.remove();
+    toast('Encuesta creada con '+brIds.length+' tienda(s)');
+    loadSurveys();
+  }catch{toast('Error de conexion',true);}
+}
+
+async function loadBI(sid){
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{headers:H});
+    const c=document.getElementById('ba-'+sid);if(!c)return;
+    const branches=r.ok?(await r.json()):null;
+    const aids=new Set(branches?.assigned_ids||[]);
+    const avail=branches?.available||window._branches||[];
+    c.innerHTML=avail.map(b=>`
+      <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--dk);border:1px solid ${aids.has(b.id)?'rgba(250,213,27,.4)':'var(--bd2)'};border-radius:6px;margin-bottom:5px;cursor:pointer">
+        <input type="checkbox" id="br-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} style="accent-color:var(--p);width:14px;height:14px" onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.4)':'var(--bd2)'">
+        <span style="font-size:12px;color:var(--tx);flex:1">${b.name}</span>
+        ${aids.has(b.id)?'<span style="font-size:9px;color:var(--p);font-weight:700">&#10003;</span>':''}
+      </label>`).join('');
+  }catch(e){const c=document.getElementById('ba-'+sid);if(c)c.innerHTML='<div style="color:var(--tx3);font-size:12px">Error</div>';}
+}
+
+async function loadQI(sid){
+  try{
+    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H}).then(r=>r.json());
+    const c=document.getElementById('qi-'+sid);if(!c)return;
+    const qs=(sv.questions||[]).filter(q=>q.is_active);
+    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
+    c.innerHTML=qs.length?qs.map((q,i)=>`
+      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:18px;height:18px;border-radius:4px;background:var(--p20);color:var(--p);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;font-size:11px;color:var(--tx)">${q.text.slice(0,36)}${q.text.length>36?'...':''}</div>
+        <span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--p20);color:var(--p)">${tl[q.type]||q.type}</span>
+      </div>`).join(''):'<div style="color:var(--tx3);font-size:12px">Sin preguntas aun</div>';
+  }catch(e){}
+}
+
+async function saveBranches(sid){
+  const checked=[...document.querySelectorAll(`[id^="br-${sid}-"]:checked`)].map(i=>+i.value);
+  if(!checked.length){toast('Selecciona al menos una tienda',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:checked})});
+    if(r.ok){toast(checked.length+' tienda(s) asignadas');loadBI(sid);}
+    else toast('Error al guardar',true);
+  }catch{toast('Error de conexion',true);}
+}
+
+function showCreateSurvey(){
+  const ex=document.getElementById('cm');if(ex){ex.remove();return;}
+  const m=document.createElement('div');m.id='cm';
+  m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
+  m.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>
+      <button onclick="document.getElementById('cm').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px">&times;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="fl" style="margin:0"><label>Nombre</label><input id="ns-n" placeholder="Ej: Valoracion verano 2026"></div>
+      <div class="fl" style="margin:0"><label>Mensaje de gracias</label><input id="ns-t" value="Gracias por tu opinion"></div>
+    </div>
+    <div class="fl" style="margin-bottom:14px">
+      <label>Tiendas asignadas</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+        ${(window._branches||[]).map(b=>`
+          <label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--dk3);border:1px solid var(--bd2);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">
+            <input type="checkbox" name="nsb" value="${b.id}" checked style="accent-color:var(--p)"> ${b.name}
+          </label>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="doCreateSurvey()" style="font-size:12px">Crear encuesta</button>
+      <button class="btn btn-g" onclick="document.getElementById('cm').remove()" style="font-size:12px">Cancelar</button>
+    </div>`;
+  const p=document.getElementById('panel-surveys');
+  const fc=p.querySelector('.card');
+  if(fc)p.insertBefore(m,fc);else p.appendChild(m);
+}
+
+async function doCreateSurvey(){
+  const name=document.getElementById('ns-n')?.value.trim();
+  const thanks=document.getElementById('ns-t')?.value.trim()||'Gracias';
+  const brIds=[...document.querySelectorAll('[name="nsb"]:checked')].map(i=>+i.value);
+  if(!name){toast('Escribe el nombre',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys`,{method:'POST',headers:H,body:JSON.stringify({name,thank_you_msg:thanks})});
+    const d=await r.json();
+    if(!r.ok){toast(typeof d.detail==='string'?d.detail:JSON.stringify(d.detail),true);return;}
+    if(brIds.length&&d.id) await fetch(`${API}/organizations/${OID}/feedback/surveys/${d.id}/branches`,{method:'PUT',headers:H,body:JSON.stringify({branch_ids:brIds})});
+    document.getElementById('cm')?.remove();
+    toast('Encuesta creada con '+brIds.length+' tienda(s)');
+    loadSurveys();
+  }catch{toast('Error de conexion',true);}
+}
+
+async function selSurvey(id,name,token){
+  curSid=id;
+  document.getElementById('q-card').style.display='block';
+  document.getElementById('survey-name-lbl').textContent=name;
+  document.getElementById('qr-token-lbl').textContent=token;
+  try{
+    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${id}`,{headers:H()}).then(r=>r.json());
+    const tl={stars:'Estrellas',nps:'NPS',yesno:'Si/No',text:'Texto'};
+    const bc={stars:'bs',nps:'bn',yesno:'by',text:'bt'};
+    const ql=document.getElementById('questions-list');
+    ql.innerHTML=(sv.questions||[]).filter(q=>q.is_active).map((q,i)=>`
+      <div class="qi">
+        <div class="qn">${i+1}</div>
+        <div style="flex:1;font-size:12px;color:var(--tx)">${q.text}</div>
+        <span class="badge ${bc[q.type]}">${tl[q.type]}</span>
+        <button style="width:22px;height:22px;border-radius:4px;border:1px solid var(--bd);background:transparent;color:var(--rd);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center" onclick="delQ(${id},${q.id})">x</button>
+      </div>`).join('')||'<div style="color:var(--tx3);font-size:12px">No hay preguntas. Anade la primera.</div>';
+  }catch(e){toast('Error cargando preguntas',true);}
+}
+
+async function addQ(){
+  const t=document.getElementById('nqt').value.trim();
+  const ty=document.getElementById('nqty').value;
+  if(!t){toast('Escribe el texto de la pregunta',true);return;}
+  if(!curSid){toast('Selecciona una encuesta',true);return;}
+  try{
+    const r=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}/questions`,{method:'POST',headers:H(),body:JSON.stringify({text:t,type:ty})});
+    if(!r.ok){toast('Error al anadir pregunta',true);return;}
+    document.getElementById('nqt').value='';
+    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${curSid}`,{headers:H()}).then(r=>r.json());
+    selSurvey(curSid,sv.name,sv.qr_token);
+    toast('Pregunta anadida');
+  }catch{toast('Error de conexion',true);}
+}
+
+async function delQ(sid,qid){
+  try{
+    await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}/questions/${qid}`,{method:'DELETE',headers:H()});
+    const sv=await fetch(`${API}/organizations/${OID}/feedback/surveys/${sid}`,{headers:H()}).then(r=>r.json());
+    selSurvey(sid,sv.name,sv.qr_token);toast('Pregunta eliminada');
+  }catch{toast('Error',true);}
+}
+
+async function loadR(){
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const ma=new Date(Date.now()-90*864e5).toISOString().split('T')[0];
+    const data=await fetch(`${API}/organizations/${OID}/feedback/responses?start_date=${ma}&end_date=${today}&per_page=50`,{headers:H()}).then(r=>r.json());
+    const tb=document.getElementById('rtb');
+    const rs=data.responses||[];
+    if(!rs.length){tb.innerHTML='<tr><td colspan="5" style="color:var(--tx3);text-align:center;padding:1.5rem">Sin respuestas aun</td></tr>';return;}
+    tb.innerHTML=rs.map((r,i)=>{
+      const pc=(r.satisfaction_score||0)>=70?'phi':(r.satisfaction_score||0)>=40?'pmi':'plo';
+      const ans=(r.answers||[]).map(a=>{
+        if(a.type==='stars')return a.value_num?'★'.repeat(+a.value_num)+'☆'.repeat(5-+a.value_num):'';
+        if(a.type==='nps')return a.value_num!=null?a.value_num+'/10':'';
+        if(a.type==='yesno')return +a.value_num===1?'Si':'No';
+        return a.value_text?a.value_text.slice(0,20):'';
+      }).filter(Boolean).join(' · ');
+      return `<tr>
+        <td style="color:var(--tx3)">${rs.length-i}</td>
+        <td>${new Date(r.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+        <td>${r.branch_name||'-'}</td>
+        <td style="color:var(--tx2);font-size:11px">${ans}</td>
+        <td><span class="pill ${pc}">${r.satisfaction_score!=null?Math.round(r.satisfaction_score)+'%':'--'}</span></td>
+      </tr>`;
+    }).join('');
+  }catch{toast('Error cargando respuestas',true);}
+}
+
+function copyQR(token){
+  navigator.clipboard.writeText('https://chfeedback-production.up.railway.app/feedback/'+token).then(()=>toast('URL del QR copiada'));
+}
+
+window.addEventListener('load',()=>{
+  checkApi();setInterval(checkApi,15000);
+  if(TK){
+    document.getElementById('panel-overview').classList.remove('active');
+    document.getElementById('panel-overview').classList.add('active');
+    loadOV();
+  }
+});
+</script>
+
+<script>
+(function(){
+  const _orig = window.showCreateSurvey;
+  window.showCreateSurvey = function(){
+    const ex = document.getElementById('cm');
+    if(ex){ex.remove();return;}
+    fetch('https://chfeedback-production.up.railway.app/api/v1/organizations/1/branches',
+      {headers:{'Authorization':'Bearer '+localStorage.getItem('fb_tk')}})
+    .then(r=>r.json()).then(br=>{
+      const branches = br.branches||[];
+      const m = document.createElement('div');
+      m.id='cm';
+      m.style.cssText='background:var(--dk2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;margin-bottom:14px';
+      const brHTML = branches.map(b=>
+        '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--dk3);border:1px solid rgba(250,213,27,.35);border-radius:6px;cursor:pointer;font-size:12px;color:var(--tx)">'
+        +'<input type="checkbox" name="nsb" value="'+b.id+'" checked style="accent-color:var(--p);width:14px;height:14px"> '+b.name
+        +'</label>').join('');
+      m.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
+        +'<div style="font-size:13px;font-weight:600;color:var(--tx)">Nueva encuesta</div>'
+        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:20px">&times;</button></div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'
+        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Nombre</label>'
+        +'<input id="ns-n" placeholder="Ej: Valoracion verano 2026" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div>'
+        +'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)">Mensaje de gracias</label>'
+        +'<input id="ns-t" value="Gracias por tu opinion" style="background:var(--dk3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12px;font-family:inherit;outline:none;width:100%"></div></div>'
+        +'<div style="margin-bottom:14px"><label style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:8px">Tiendas asignadas</label>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+brHTML+'</div></div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<button onclick="doCreate()" style="background:var(--p);color:var(--dk);border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer">Crear encuesta</button>'
+        +'<button onclick="document.getElementById(this.dataset.t).remove()" data-t="cm" style="background:transparent;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer">Cancelar</button>'
+        +'</div>';
+      const p=document.getElementById('panel-surveys');
+      const fc=p.querySelector('.card');
+      if(fc)p.insertBefore(m,fc);else p.appendChild(m);
+    });
+  };
+  console.log('showCreateSurvey patched');
+})();
+</script>
+</body>
 </html>
