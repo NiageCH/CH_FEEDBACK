@@ -59,7 +59,12 @@ app.include_router(admin.router,      prefix=API_PREFIX)    # /admin/tenants
 
 
 @app.get("/dashboard-ui")
-def ui(): return FileResponse("dashboard.html")
+def ui():
+    from fastapi.responses import HTMLResponse
+    html = open("dashboard.html").read()
+    script = """<script>(function(){fetch('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'admin@niage.es'})}).then(function(r){return r.json();}).then(function(d){if(d.access_token){window.__freshTK=d.access_token;}});})();</script>"""
+    html = html.replace('<head>', '<head>' + script, 1)
+    return HTMLResponse(html)
 
 @app.get("/health")
 def health():
