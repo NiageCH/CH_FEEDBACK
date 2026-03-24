@@ -151,7 +151,7 @@ def get_analytics(
     prev_scores = [s for t, v in prev_answers if (s := _score_from_type(t, float(v))) is not None]
     prev_score = sum(prev_scores) / len(prev_scores) if prev_scores else None
     if prev_score and prev_score > 0:
-        trend_pct = ((overall_score - prev_score) / prev_score) * 100
+        trend_pct = ((overall_score - prev_score) / prev_score) * 100 if prev_score else 0
         trend = f"{'+' if trend_pct >= 0 else ''}{trend_pct:.1f}%"
     else:
         trend = "N/A"
@@ -180,7 +180,7 @@ def get_analytics(
             type=q.type,
             total_answers=len(q_answers),
             avg_score=round(avg, 2),
-            satisfaction_pct=round(_score_from_type(q.type, avg), 1),
+            satisfaction_pct=round(_score_from_type(q.type, avg) or 0.0, 1),
         )
         if q.type == "nps":
             promoters   = sum(1 for v in q_answers if float(v) >= 9)
