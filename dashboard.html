@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Customer Hub — Feedback</title>
+<title>Customer Hub â Feedback</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -187,7 +187,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
           <div class="chart-wrap"><canvas id="stars-chart"></canvas></div>
         </div>
         <div class="card full">
-          <div class="card-title">Actividad — Ultimos 30 Dias</div>
+          <div class="card-title">Actividad â Ultimos 30 Dias</div>
           <div class="chart-wrap"><canvas id="time-chart"></canvas></div>
         </div>
       </div>
@@ -198,7 +198,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <div class="page-header">
         <div>
           <div class="page-title">Encuestas & QR</div>
-          <div class="page-sub">Un QR por encuesta — el cliente selecciona su tienda al escanear</div>
+          <div class="page-sub">Un QR por encuesta â el cliente selecciona su tienda al escanear</div>
         </div>
         <button class="btn btn-p" onclick="openNewSurvey()">+ Nueva encuesta</button>
       </div>
@@ -230,7 +230,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
   <div class="form-box" style="width:560px;max-height:85vh;overflow-y:auto">
     <div class="form-title">
       Nueva encuesta
-      <button class="close-btn" onclick="closeNewSurvey()">×</button>
+      <button class="close-btn" onclick="closeNewSurvey()">Ã</button>
     </div>
 
     <div class="field">
@@ -249,9 +249,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     </div>
 
     <div class="field">
-      <label>Preguntas <span style="color:var(--tx3);font-size:10px">(puedes añadir hasta 5)</span></label>
+      <label>Preguntas <span style="color:var(--tx3);font-size:10px">(puedes aÃ±adir hasta 5)</span></label>
       <div id="ns-questions"></div>
-      <button class="btn btn-g" style="margin-top:8px;font-size:11px" onclick="addQuestion()">+ Añadir pregunta</button>
+      <button class="btn btn-g" style="margin-top:8px;font-size:11px" onclick="addQuestion()">+ AÃ±adir pregunta</button>
     </div>
 
     <div class="form-actions">
@@ -337,7 +337,7 @@ async function loadOverview() {
     const ov = d.overall || {};
     document.getElementById('kpi-total').textContent = ov.total_responses || 0;
     document.getElementById('kpi-today').textContent = ov.responses_today || 0;
-    document.getElementById('overview-date').textContent = 'Satisfaccion de clientes · ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('overview-date').textContent = 'Satisfaccion de clientes Â· ' + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
     if (ov.satisfaction_score != null && ov.satisfaction_score > 0) {
       document.getElementById('kpi-score').textContent = Math.round(ov.satisfaction_score) + '%';
       document.getElementById('kpi-score-sub').textContent = '';
@@ -351,7 +351,7 @@ async function loadOverview() {
     if (window.starsChart) window.starsChart.destroy();
     window.starsChart = new Chart(document.getElementById('stars-chart'), {
       type: 'bar',
-      data: {labels: ['1★','2★','3★','4★','5★'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
+      data: {labels: ['1â','2â','3â','4â','5â'], datasets: [{data: [stars['1']||0,stars['2']||0,stars['3']||0,stars['4']||0,stars['5']||0], backgroundColor: 'rgba(250,213,27,.6)', borderRadius: 4}]},
       options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9898a8'},grid:{color:'rgba(255,255,255,.04)'}}}}
     });
     if (d.time_series && d.time_series.length) {
@@ -377,7 +377,7 @@ async function loadSurveys() {
         <div class="survey-header">
           <div style="flex:1">
             <div class="survey-name">${s.name}</div>
-            <div class="survey-meta">${s.responses_count||0} respuestas · ${s.questions_count||0} preguntas · <span class="qr-token">${s.qr_token.slice(0,20)}...</span></div>
+            <div class="survey-meta">${s.responses_count||0} respuestas Â· ${s.questions_count||0} preguntas Â· <span class="qr-token">${s.qr_token.slice(0,20)}...</span></div>
           </div>
           <span class="badge ${s.is_active ? 'badge-gn' : 'badge-rd'}">${s.is_active ? 'Activa' : 'Inactiva'}</span>
           <button class="copy-btn" onclick="copyQR('${s.qr_token}')">Copiar QR URL</button>
@@ -411,7 +411,7 @@ async function loadBranches(sid) {
       <label class="branch-item" style="border-color:${aids.has(b.id)?'rgba(250,213,27,.3)':'var(--bd2)'}">
         <input type="checkbox" class="branch-cb" id="cb-${sid}-${b.id}" value="${b.id}" ${aids.has(b.id)?'checked':''} onchange="this.closest('label').style.borderColor=this.checked?'rgba(250,213,27,.3)':'var(--bd2)'">
         <span class="branch-name">${b.name}</span>
-        ${aids.has(b.id)?'<span style="font-size:10px;color:var(--p);font-weight:700">✓</span>':''}
+        ${aids.has(b.id)?'<span style="font-size:10px;color:var(--p);font-weight:700">â</span>':''}
       </label>`).join('');
   } catch(e) { if(el) el.innerHTML = '<div style="color:var(--tx3);font-size:12px">Error</div>'; }
 }
@@ -423,7 +423,7 @@ async function loadQuestions(sid) {
     const r = await fetch(API + '/organizations/' + OID + '/feedback/surveys/' + sid, {headers: H()});
     const d = await r.json();
     const qs = (d.questions || []).filter(q => q.is_active);
-    const types = {stars:'★ Estrellas', nps:'NPS', yesno:'Si/No', text:'Texto'};
+    const types = {stars:'â Estrellas', nps:'NPS', yesno:'Si/No', text:'Texto'};
     el.innerHTML = qs.length ? qs.map((q,i) => `
       <div class="q-item">
         <div class="q-num">${i+1}</div>
@@ -470,7 +470,7 @@ async function loadResponses() {
 
 
 let questionCount = 0;
-const Q_TYPES = {stars:'★ Estrellas', nps:'NPS (0-10)', yesno:'Si / No', text:'Texto libre'};
+const Q_TYPES = {stars:'â Estrellas', nps:'NPS (0-10)', yesno:'Si / No', text:'Texto libre'};
 
 function openNewSurvey() {
   questionCount = 0;
@@ -514,7 +514,7 @@ function addQuestion() {
     <select id="qtype-${idx}" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:11px;font-family:inherit;outline:none">
       ${Object.entries(Q_TYPES).map(([v,l])=>`<option value="${v}"${v==='stars'?' selected':''}>${l}</option>`).join('')}
     </select>
-    <button onclick="document.getElementById('q-row-${idx}').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1">×</button>
+    <button onclick="document.getElementById('q-row-${idx}').remove()" style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;line-height:1">Ã</button>
   `;
   container.appendChild(div);
 }
@@ -539,7 +539,7 @@ async function createSurvey() {
     const type = document.getElementById('qtype-'+idx)?.value || 'stars';
     if(text) questions.push({text, type, sort_order: i+1});
   });
-  if(!questions.length) { showToast('Añade al menos una pregunta'); return; }
+  if(!questions.length) { showToast('AÃ±ade al menos una pregunta'); return; }
 
   try {
     // 1. Create survey
