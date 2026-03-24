@@ -117,27 +117,5 @@ def get_analytics_endpoint(
 
         try:
         return get_analytics(db, org_id, survey_id, branch_ids, sd, ed, granularity)
-    except Exception as e:
-        return {
-            "total_responses": 0,
-            "responses_today": 0,
-            "active_surveys": 0,
-            "satisfaction_score": None,
-            "by_question": [],
-            "by_branch": [],
-            "stars_distribution": {"1":0,"2":0,"3":0,"4":0,"5":0},
-            "time_series": []
-        }
     except Exception:
-        from schemas import AnalyticsOut
-        return AnalyticsOut(
-            total_responses=0,
-            responses_today=0,
-            active_surveys=0,
-            satisfaction_score=None,
-            by_question=[],
-            by_branch=[],
-            stars_distribution={1:0,2:0,3:0,4:0,5:0},
-            time_series=[],
-        )
-
+        return {"total_responses":0,"responses_today":0,"active_surveys":0,"satisfaction_score":None,"by_question":[],"by_branch":[],"stars_distribution":{"1":0,"2":0,"3":0,"4":0,"5":0},"time_series":[]}
