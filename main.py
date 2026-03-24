@@ -107,3 +107,4 @@ def login(body: dict, db: Session = Depends(get_db)):
         "user_id": row[0], "org_id": row[1],
         "org_name": org[0] if org else "", "full_name": row[2], "role": row[3]
     }
+  # v2
