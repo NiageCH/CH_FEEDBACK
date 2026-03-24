@@ -80,7 +80,7 @@ def get_analytics(
     # Get survey IDs for this org first, then filter responses directly
     org_survey_ids = [
         r[0] for r in db.execute(
-            sqla_sqla_text("SELECT id FROM feedback_surveys WHERE organization_id=:oid AND is_active=true"),
+            sqla_text("SELECT id FROM feedback_surveys WHERE organization_id=:oid AND is_active=true"),
             {"oid": org_id}
         ).fetchall()
     ]
@@ -151,7 +151,7 @@ def get_analytics(
     prev_scores = [s for t, v in prev_answers if (s := _score_from_type(t, float(v))) is not None]
     prev_score = sum(prev_scores) / len(prev_scores) if prev_scores else None
     if prev_score and prev_score > 0:
-        trend_pct = ((overall_score - prev_score) / prev_score) * 100 if prev_score else 0
+        trend_pct = ((overall_score - prev_score) / prev_score) * 100
         trend = f"{'+' if trend_pct >= 0 else ''}{trend_pct:.1f}%"
     else:
         trend = "N/A"
@@ -180,7 +180,7 @@ def get_analytics(
             type=q.type,
             total_answers=len(q_answers),
             avg_score=round(avg, 2),
-            satisfaction_pct=round(_score_from_type(q.type, avg) or 0.0, 1),
+            satisfaction_pct=round(_score_from_type(q.type, avg), 1),
         )
         if q.type == "nps":
             promoters   = sum(1 for v in q_answers if float(v) >= 9)
@@ -201,7 +201,7 @@ def get_analytics(
     # Per-branch breakdown
     from sqlalchemy import text as sqla_text
     branch_rows = db.execute(
-        sqla_sqla_text("SELECT id, name FROM branches WHERE organization_id = :org_id"),
+        sqla_text("SELECT id, name FROM branches WHERE organization_id = :org_id"),
         {"org_id": org_id}
     ).fetchall()
 
