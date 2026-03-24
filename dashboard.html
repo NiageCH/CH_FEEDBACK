@@ -126,10 +126,10 @@ input:focus,select:focus{border-color:var(--p)}
     <div id="panel-setup" class="panel active">
       <div class="setup-box">
         <h2>Conectar con la API</h2>
-        <p>Introduce tu JWT token para ver los datos reales de tu API en chfeedback-production.up.railway.app</p>
+        <p>Introduce tu JWT token para ver los datos reales de tu API en localhost:8001</p>
         <div class="fl"><label>JWT Token</label><input id="ti" placeholder="eyJhbGci..." style="font-family:monospace;font-size:10px"></div>
         <div class="fl"><label>Organization ID</label><input id="oi" value="1" style="width:80px"></div>
-        <button class="btn btn-p" onclick="connect()" style="width:100%;justify-content:center;margin-top:4px">Conectar a chfeedback-production.up.railway.app</button>
+        <button class="btn btn-p" onclick="connect()" style="width:100%;justify-content:center;margin-top:4px">Conectar a localhost:8001</button>
         <p style="font-size:10px;color:var(--tx3);margin-top:12px;text-align:center">Asegurate que uvicorn esta corriendo en el puerto 8001</p>
       </div>
     </div>
@@ -216,6 +216,7 @@ input:focus,select:focus{border-color:var(--p)}
 </div>
 <div id="toast" class="toast"></div>
 <script>
+localStorage.setItem('fb_tk','AUTO');localStorage.setItem('fb_oid','1');
 const API='https://chfeedback-production.up.railway.app/api/v1';
 let TK=localStorage.getItem('fb_tk')||'';
 let OID=localStorage.getItem('fb_oid')||'1';
